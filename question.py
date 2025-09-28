@@ -2,30 +2,31 @@
 
 
 class Question:
-    def __init__(self, title=None, answer=None, *answers):
+    def __init__(self, title=None, answer=[], *answers):
         self._data = {
             "title": title,
-            "answer": answer,
-            "answers": answers
+            "right_answers": answer,
+            "all_answers": answers
         }
     
     def load(self, data: tuple):
-        self._data["title"] = data[0]
-        answers = []
+        right_answers, all_answers = [], []
         for answer, right in data[1]:
-            answers.append(answer)
-            if right:
-                self._data["answer"] = answer
-        self._data["answers"] = answers
+            all_answers.append(answer)
+            if right: 
+                right_answers.append(answer)
+        self._data["title"] = data[0]
+        self._data["right_answers"] = right_answers
+        self._data["all_answers"] = all_answers
     
     def get_title(self):
         return self._data["title"]
     
     def get_answers(self):
-        return self._data["answers"]
+        return self._data["all_answers"]
     
     def is_right(self, answer: str):
-        return self._data["answer"] == answer
+        return answer in self._data["right_answers"]
     
 
     

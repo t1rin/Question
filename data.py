@@ -1,8 +1,6 @@
 
-import json, os
-
 from random import randint, choice
-
+import json, os
 
 
 class Data:
@@ -64,7 +62,7 @@ class Data:
             return
 
         indexes = [randint(0, len(self._data_json)-1) 
-                   for _ in range(quentity_items)]
+                   for _ in range(quentity_items)] # TODO: добавить опред. процент, выше которого правильных ответов быть не должно
         keys = [*self._data_json.keys()]
         values = [*self._data_json.values()]
         main_index = choice(indexes)
