@@ -55,7 +55,7 @@ class Data:
 
         return self
 
-    def get_data(self, key_is_main=True, quentity_items=3) -> tuple | None:
+    def get_rand_question(self, key_is_main=True, quentity_items=3) -> tuple | None:
         if self._data_json is None or len(self._data_json) == 0:
             print("warning: вопросов нет")
             return

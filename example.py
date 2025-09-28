@@ -10,18 +10,18 @@ data = None
 def show_question(question, *answers):
     print(question)
     for i in range(len(answers)):
-        print(f"{i+1}. {answers[i]}")
+        print(f"{i}. {answers[i]}")
 
 def main_loop():
     while active_loop:
-        data_question = data.get_data(key_is_main=key_is_main)
+        data_question = data.get_rand_question(key_is_main=key_is_main)
         if data_question is None:
             print("Добавьте вопросов!")
             return
         question.load(data_question)
         show_question(question.get_title(), *question.get_answers())
         print("Каков ответ?" if key_is_main else "Каков вопрос?")
-        while not question.is_right(question.get_answers()[int(input(">> "))-1]):
+        while not question.is_right(question.get_answers()[int(input(">> "))]):
             print("Ответ неверный! Попробуй снова")
         else:
             print("Молодец! Ответ верный! \n")
