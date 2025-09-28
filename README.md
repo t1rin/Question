@@ -1,8 +1,7 @@
 # Описание
 
-  
 <div align="center">
-  <img src="src/3.png">
+  <img src="src/2.png">
 </div>
 
 
