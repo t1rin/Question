@@ -2,10 +2,10 @@ from questions import Data
 from questions import Question
 
 
-active_loop = True
-key_is_main = True
-question = None
-data = None
+active_loop = True  # вспомогательная переменная
+key_is_main = True  # при значении False вопросы поменяются с ответами
+question = None     # объявление имени для будущего экземпляра
+data = None         # объявление имени для будущего экземпляра
 
 def show_question(question, *answers):
     print(question)
@@ -30,7 +30,7 @@ def main_loop():
 if __name__ == "__main__":
     data = Data().load_json()
     question = Question()
-    while 1:
+    while True:
         try:
             main_loop()
         except Exception:
