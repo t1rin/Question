@@ -30,5 +30,9 @@ def main_loop():
 if __name__ == "__main__":
     data = Data().load_json()
     question = Question()
-    main_loop()
+    while 1:
+        try:
+            main_loop()
+        except Exception:
+            pass
 
