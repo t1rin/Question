@@ -15,16 +15,19 @@ class App:
         self.height = None  # значение высоты терминала
         self.width = None   # значение ширины терминала
 
-        # инизиализация Модуля + загрузка данных
-        self._data = Data().load_json()
-        self._question = Question()
-
         self.active_loop = True   # вспомогательная переменная
         self.key_is_main = False  # при значении False вопросы поменяются с ответами
 
         self._active_warning = False  # вспомогательная переменная
         self._index_warning = None    # вспомогательная переменная
         self._q_warning = 2           # количество миганий в warning
+
+        # инизиализация Модуля + загрузка данных
+        self._data = Data().load_json()
+        self._question = Question()
+
+        if self._data is None:
+            self.active_loop = False
 
         self.update_size()
          
