@@ -28,12 +28,12 @@ class Data:
 
     def _create_json(self) -> None:
         index = 0
-        name = self._json_name
-        while os.path.exists(name):
-            if os.path.exists(name+str(index)):
+        name = self._json_name.split(".")
+        while os.path.exists(self._json_name):
+            if os.path.exists((str(index)+".").join(name)):
                 index += 1
                 continue
-            os.rename(name, name+str(index))
+            os.rename(self._json_name, (str(index)+".").join(name))
 
         with open(self._json_name, "w", encoding="utf-8") as json_file:
             json_file.write("{}")
@@ -48,7 +48,7 @@ class Data:
             self._create_json()
         if not self._is_normal_structure_json():
             print("error: некорректная структура json файла")
-            return
+            self._create_json()
         with open(self._json_name, "r", encoding="utf-8") as json_file:
             self._data_json = json.loads(json_file.read())
         return self

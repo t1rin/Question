@@ -34,11 +34,12 @@ class App:
     def run(self):
         while self.active_loop:
             data_question = self._data.get_rand_question(key_is_main=self.key_is_main)
-            self._question.load(data_question)
 
             if data_question is None:
                 self.show_message("Добавьте вопросов!")
                 return
+            
+            self._question.load(data_question)
             
             right = None
             while not right:
