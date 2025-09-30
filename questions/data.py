@@ -7,10 +7,23 @@ class Data:
         self._json_name = "data.json"
         self._data_json = None
 
-    def _is_normal_json(self) -> bool:
-        if not os.path.exists(self._json_name):
+    def _is_exist_json(self) -> bool:
+        return os.path.exists(self._json_name)
+
+    def _is_normal_structure_json(self) -> bool:
+        try:
+            with open(self._json_name, "r", encoding="utf-8") as json_file:
+                data = json.loads(json_file.read())
+        except: return False
+        if not all(isinstance(group, str) for group in data.keys()):
             return False
-        ... # TODO: добавить условия
+        for item in data.values():
+            if not isinstance(item, dict):
+                return False
+            for key, value in item:
+                if isinstance(key, str) and isinstance(value, str):
+                    continue
+                return False
         return True     
 
     def _create_json(self) -> None:
@@ -31,8 +44,11 @@ class Data:
             json_file.write(data)
 
     def load_json(self) -> 'Data':
-        if not self._is_normal_json():
+        if not self._is_exist_json():
             self._create_json()
+        if not self._is_normal_structure_json():
+            print("error: некорректная структура json файла")
+            return
         with open(self._json_name, "r", encoding="utf-8") as json_file:
             self._data_json = json.loads(json_file.read())
         return self
