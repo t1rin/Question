@@ -20,7 +20,7 @@ class Data:
         for item in data.values():
             if not isinstance(item, dict):
                 return False
-            for key, value in item:
+            for key, value in item.items():
                 if isinstance(key, str) and isinstance(value, str):
                     continue
                 return False
