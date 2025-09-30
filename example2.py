@@ -1,4 +1,4 @@
-import os, time
+import os, time, random
 
 from questions import Data
 from questions import Question
@@ -15,8 +15,10 @@ class App:
         self.height = None  # значение высоты терминала
         self.width = None   # значение ширины терминала
 
-        self.active_loop = True   # вспомогательная переменная
-        self.key_is_main = False  # при значении False вопросы поменяются с ответами
+        self.active_loop = True     # вспомогательная переменная
+        self.rand_key_value = True  # рандомный значение self.key_is_main
+        self.key_is_main = True     # при значении False вопросы поменяются с ответами
+        self.quentity_items = 5     # вспомогательная переменная
 
         self._active_warning = False  # вспомогательная переменная
         self._index_warning = None    # вспомогательная переменная
@@ -33,7 +35,11 @@ class App:
          
     def run(self):
         while self.active_loop:
-            data_question = self._data.get_rand_question(key_is_main=self.key_is_main)
+            if self.rand_key_value:
+                self.key_is_main = bool(random.randint(0,1))
+
+            data_question = self._data.get_rand_question(
+                key_is_main=self.key_is_main, quentity_items=self.quentity_items)
 
             if data_question is None:
                 self.show_message("Добавьте вопросов!")
