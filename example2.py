@@ -41,7 +41,8 @@ class App:
             while not right:
                 self.clear_screen()
 
-                self.show_question(self._question.get_title(), 
+                self.show_question(self._question.get_title(),
+                                   self._question.get_group(),
                                    *self._question.get_answers())
 
                 if self._active_warning:
@@ -61,7 +62,7 @@ class App:
                     if not (0 <= index < len(self._question.get_answers())):
                         raise ValueError
                 except ValueError:
-                    self.show_warning()
+                    self._active_warning = True
                     continue
 
                 right = self._question.is_right(
@@ -74,12 +75,19 @@ class App:
                     self.show_message("❌ Увы... Ответ неверный, выберите другой")
                 self.show_message("\nНажми Enter для продолжения...")
                 input()
+                
+                self.update_size()
             
     def show_message(self, msg):
         print(msg)
 
-    def show_question(self, question, *answers):
-        print(question)
+    def show_question(self, question, group, *answers):
+        self.update_size()
+        group_title = f"(ТЕКУЩАЯ ГРУППА > {group})"
+        if len(question + group_title) < self.width:
+            print(question.ljust(self.width-len(group_title)) + group_title)
+        else:
+            print(question)
         for i in range(len(answers)):
             print(f"{i+1}. {answers[i]}")
 
@@ -92,9 +100,6 @@ class App:
 
         time.sleep(time_)
         self.clear_screen()
-
-    def show_warning(self):
-        self._active_warning = True
 
     def get_answer(self, msg=None):
         return input(msg) if msg else input()
