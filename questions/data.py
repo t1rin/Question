@@ -138,7 +138,7 @@ class Data:
             return
         
         if group is None:
-            group = self.get_groups[0]
+            group = self.get_groups()[0]
 
         items = self._data_json[group]
         keys = [*items.keys()]

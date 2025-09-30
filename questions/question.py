@@ -11,7 +11,7 @@ class Question:
     
     def load(self, data: tuple):
         right_answers, all_answers = [], []
-        for answer, right in data[1]:
+        for answer, right in data[-1]:
             all_answers.append(answer)
             if right: 
                 right_answers.append(answer)
