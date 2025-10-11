@@ -21,7 +21,7 @@ class Data:
             if not isinstance(item, dict):
                 return False
             for key, value in item.items():
-                if isinstance(key, str) and isinstance(value, str):
+                if isinstance(key, str) and (isinstance(value, str) or isinstance(value, list)):
                     continue
                 return False
         return True     

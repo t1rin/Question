@@ -1,5 +1,7 @@
-test.py
-data_.json
 /__pycache__
 /questions/__pycache__
+/archive
+
+test.py
+data_.json
 TODO.md
