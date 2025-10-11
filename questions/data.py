@@ -1,10 +1,14 @@
+import logging
+import json
+import os
 from random import randint, choice, shuffle
-import json, os
+
+logger = logging.getLogger(__name__)
 
 
 class Data:
-    def __init__(self):
-        self._json_name = "data.json"
+    def __init__(self, path_to_json="data.json"):
+        self._json_name = path_to_json
         self._data_json = None
 
     def _is_exist_json(self) -> bool:
@@ -47,7 +51,7 @@ class Data:
         if not self._is_exist_json():
             self._create_json()
         if not self._is_normal_structure_json():
-            print("error: некорректная структура json файла")
+            logger.error("Некорректная структура json файла")
             self._create_json()
         with open(self._json_name, "r", encoding="utf-8") as json_file:
             self._data_json = json.loads(json_file.read())
@@ -55,7 +59,7 @@ class Data:
 
     def add_data(self, group: str, key: str, value: str) -> 'Data':
         if any(not isinstance(name, str) for name in [group, key, value]):
-            print("error: ожидается group->str, key->str, value->str")
+            logger.error("Ожидается group->str, key->str, value->str")
             return self
         if group not in self._data_json.keys():
             self._data_json[group] = {}
@@ -78,10 +82,10 @@ class Data:
     
     def get_items(self, group: str, key_is_main=True) -> list | None:
         if not isinstance(group, str):
-            print("error: ожидается group->str")
+            logger.error("Ожидается group->str")
             return
         if group not in self._data_json.keys():
-            print("error: не найдена группа " + group)
+            logger.error("Не найдена группа " + group)
             return
         
         if key_is_main:
@@ -98,16 +102,16 @@ class Data:
     def get_question(self, group, title, 
                      key_is_main=True, quentity_items=3) -> tuple | None:
         if not isinstance(quentity_items, int) or quentity_items < 2:
-            print("error: некорректное количество вариантов ответа")
+            logger.error("Некорректное количество вариантов ответа")
             return 
         if any(not isinstance(name, str) for name in [title, group]):
-            print("error: ожидается group->str, title->str")
+            logger.error("Ожидается group->str, title->str")
             return 
         if group not in self.get_groups():
-            print("error: не найдена группа " + group)
+            logger.error("Не найдена группа " + group)
             return
         if title not in self.get_items(group, key_is_main=key_is_main):
-            print("error: title \"" + title + "\" не найден")
+            logger.error("title \"" + title + "\" не найден")
             return
             
         items = self._data_json[group]
@@ -123,7 +127,7 @@ class Data:
                     main_index = values.index(value)
                     break
             else:
-                print("error: не найдено title")
+                logger.error("Не найдено title")
                 return
 
         indexes = [randint(0, len(items)-1) 
@@ -150,7 +154,7 @@ class Data:
     def get_rand_question(self, group=None, 
                           key_is_main=True, quentity_items=3) -> tuple | None:
         if self._data_json is None or len(self._data_json) == 0:
-            print("warning: вопросов нет")
+            logger.warning("Вопросов нет")
             return
         
         if group is None:
