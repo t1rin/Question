@@ -30,7 +30,7 @@ def main_loop():
 
 
 if __name__ == "__main__":
-    data = Data().load_json()
+    data = Data()
     question = Question()
     while True:
         try:

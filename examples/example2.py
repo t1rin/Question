@@ -28,7 +28,7 @@ class App:
         self._q_warning = 2           # количество миганий в warning
 
         # инизиализация Модуля + загрузка данных
-        self._data = Data().load_json()
+        self._data = Data()
         self._question = Question()
 
         if self._data is None:

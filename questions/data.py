@@ -11,22 +11,31 @@ class Data:
         self._json_name = path_to_json
         self._data_json = None
 
-    def _is_exist_json(self) -> bool:
-        return os.path.exists(self._json_name)
+        if not self._is_normal_json():
+            self._create_json()
+        with open(self._json_name, "r", encoding="utf-8") as json_file:
+            self._data_json = json.loads(json_file.read())
 
-    def _is_normal_structure_json(self) -> bool:
+    def _is_normal_json(self) -> bool:
+        if not os.path.exists(self._json_name):
+            return False
         try:
             with open(self._json_name, "r", encoding="utf-8") as json_file:
                 data = json.loads(json_file.read())
-        except: return False
+        except:
+            logger.error("Некорректная структура json файла")
+            return False
         if not all(isinstance(group, str) for group in data.keys()):
+            logger.error("Ожидается наименование группы")
             return False
         for item in data.values():
             if not isinstance(item, dict):
+                logger.error("Ожидалось значение по наименованию группы (dict)")
                 return False
             for key, value in item.items():
                 if isinstance(key, str) and (isinstance(value, str) or isinstance(value, list)):
                     continue
+                logger.error("Ожидалось, что вопрос -> [str] , а ответ -> [str | list]")
                 return False
         return True     
 
@@ -42,24 +51,18 @@ class Data:
         with open(self._json_name, "w", encoding="utf-8") as json_file:
             json_file.write("{}")
 
+        logger.info("Создан новый " + self._json_name)
+
     def _update_json(self) -> None:
         with open(self._json_name, "w", encoding="utf-8") as json_file:
             data = json.dumps(self._data_json, ensure_ascii=False, indent=4)
             json_file.write(data)
 
-    def load_json(self) -> 'Data':
-        if not self._is_exist_json():
-            self._create_json()
-        if not self._is_normal_structure_json():
-            logger.error("Некорректная структура json файла")
-            self._create_json()
-        with open(self._json_name, "r", encoding="utf-8") as json_file:
-            self._data_json = json.loads(json_file.read())
-        return self
-
     def add_data(self, group: str, key: str, value: str) -> 'Data':
+        if not self._is_normal_json():
+            self._create_json()
         if any(not isinstance(name, str) for name in [group, key, value]):
-            logger.error("Ожидается group->str, key->str, value->str")
+            logger.error("Ожидается group -> [str], key -> [str], value -> [str]")
             return self
         if group not in self._data_json.keys():
             self._data_json[group] = {}
@@ -77,12 +80,16 @@ class Data:
 
         return self
 
+    def load_json(self, json_data: str = "{}") -> 'Data':
+        logger.warning("С недавнего периода load_json поменял свой функционал (подробнее на https://github.com/t1rin/Question)")
+        ...
+
     def get_groups(self) -> list:
         return list(self._data_json.keys())
     
     def get_items(self, group: str, key_is_main=True) -> list | None:
         if not isinstance(group, str):
-            logger.error("Ожидается group->str")
+            logger.error("Ожидается group -> [str]")
             return
         if group not in self._data_json.keys():
             logger.error("Не найдена группа " + group)
@@ -105,7 +112,7 @@ class Data:
             logger.error("Некорректное количество вариантов ответа")
             return 
         if any(not isinstance(name, str) for name in [title, group]):
-            logger.error("Ожидается group->str, title->str")
+            logger.error("Ожидается group -> [str], title -> [str]")
             return 
         if group not in self.get_groups():
             logger.error("Не найдена группа " + group)
