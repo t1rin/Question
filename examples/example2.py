@@ -1,7 +1,10 @@
-import os, time, random
+import os, sys
+sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 
-from questions import Data
-from questions import Question
+import time
+import random
+
+from questions import *
 
 
 color_codes = {

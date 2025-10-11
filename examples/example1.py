@@ -1,5 +1,7 @@
-from questions import Data
-from questions import Question
+import os, sys
+sys.path.append(os.path.dirname(os.path.dirname(__file__)))
+
+from questions import *
 
 
 active_loop = True  # вспомогательная переменная
