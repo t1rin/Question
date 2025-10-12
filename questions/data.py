@@ -11,20 +11,12 @@ class Data:
         self._json_name = path_to_json
         self._data_json = None
 
-        if not self._is_normal_json():
+        if not self._is_normal_file():
             self._create_json()
         with open(self._json_name, "r", encoding="utf-8") as json_file:
             self._data_json = json.loads(json_file.read())
 
-    def _is_normal_json(self) -> bool:
-        if not os.path.exists(self._json_name):
-            return False
-        try:
-            with open(self._json_name, "r", encoding="utf-8") as json_file:
-                data = json.loads(json_file.read())
-        except:
-            logger.error("Некорректная структура json файла")
-            return False
+    def _is_normal_data(self, data: dict) -> bool:
         if not all(isinstance(group, str) for group in data.keys()):
             logger.error("Ожидается наименование группы")
             return False
@@ -35,9 +27,21 @@ class Data:
             for key, value in item.items():
                 if isinstance(key, str) and (isinstance(value, str) or isinstance(value, list)):
                     continue
-                logger.error("Ожидалось, что вопрос -> [str] , а ответ -> [str | list]")
+                logger.error("Ожидалось вопрос -> [str]; ответ -> [str | list]")
                 return False
-        return True     
+        return True
+
+    def _is_normal_file(self) -> bool:
+        if not os.path.exists(self._json_name):
+            return False
+        try:
+            with open(self._json_name, "r", encoding="utf-8") as json_file:
+                data = json.loads(json_file.read())
+        except:
+            logger.error("Некорректная структура json файла")
+            return False
+        
+        return self._is_normal_data(data)
 
     def _create_json(self) -> None:
         index = 0
@@ -58,8 +62,40 @@ class Data:
             data = json.dumps(self._data_json, ensure_ascii=False, indent=4)
             json_file.write(data)
 
+    def _recursion_update(self, *dicts):
+        if len(dicts) == 1: return dicts[0]
+        keys = set().union(*[set(d.keys()) for d in dicts])
+        if len(keys) == sum([len(i) for i in dicts]):
+            return dict(((i[0], *i[1]) if isinstance(i[1], list) else (i[0], i[1]))
+                        for j in dicts for i in j.items())
+        new_dicts = {}
+        for key in keys:
+            values = []
+            for d in dicts:
+                if key in d.keys():
+                    values.append(d[key])
+            if all(isinstance(i, str) for i in values):
+                if len(values:=list(set(values))) == 1:
+                    new_dicts[key] = values[0]
+                else:
+                    new_dicts[key] = values
+            elif any(isinstance(i, list) for i in values):
+                new_values = []
+                for value in values:
+                    if isinstance(value, list):
+                        new_values += value
+                    else:
+                        new_values.append(value)
+                if len(new_values := list(set(new_values))) == 1:
+                    new_dicts[key] = new_values[0]
+                else:
+                    new_dicts[key] = new_values
+            else:
+                new_dicts[key] = self._recursion_update(*values)
+        return new_dicts
+
     def add_data(self, group: str, key: str, value: str) -> 'Data':
-        if not self._is_normal_json():
+        if not self._is_normal_file():
             self._create_json()
         if any(not isinstance(name, str) for name in [group, key, value]):
             logger.error("Ожидается group -> [str], key -> [str], value -> [str]")
@@ -80,9 +116,14 @@ class Data:
 
         return self
 
-    def load_json(self, json_data: str = "{}") -> 'Data':
+    def load_json(self, data: dict = {}) -> 'Data':
         logger.warning("С недавнего периода load_json поменял свой функционал (подробнее на https://github.com/t1rin/Question)")
-        ...
+        if self._is_normal_data(data):
+            new_data = self._recursion_update(self._data_json, data)
+            self._data_json = new_data
+            self._update_json()
+        else:
+            logger.error("json данные не имеют смысла")
 
     def get_groups(self) -> list:
         return list(self._data_json.keys())
