@@ -21,19 +21,19 @@
 
 ```python
 # Инициализация:
-data = Data(path_to_json="my_json.json")
+data = QuestionsData(path_to_json="my_json.json")
 ```
 
 загрузка данных из файла `my_json.json`. Если `path_to_json` не указан, то работа с json файлом произоводится не будет
 
-> далее методы класса `Data`
+> далее методы класса `QuestionsData`
 
 #### — метод `load_json`
 
 позволяет загрузить новые данные из словаря
 
 ```python
-data = Data()
+data = QuestionsData()
 
 data_dict = {"Набор4": {"Вопрос1": "Ответ1", "Вопрос2": "Ответ2"}}
 data.load_json(data_dict)
@@ -44,7 +44,7 @@ data.load_json(data_dict)
 позволяет добавлять вопросы (поддерживается только по отному вопросу и ответу за раз)
 
 ```python
-data = Data()
+data = QuestionsData()
 data.add_data(
   group="Набор4",
   key="Вопрос1",
@@ -57,7 +57,7 @@ data.add_data(
 позволяет получить список всех групп
 
 ```python
-data = Data()
+data = QuestionsData()
 groups = data.get_groups()
 ```
 
@@ -66,7 +66,7 @@ groups = data.get_groups()
 позволяет получить элементы группы
 
 ```python
-data = Data()
+data = QuestionsData()
 items = data.get_items(group="Набор1")
 ```
 
@@ -77,7 +77,7 @@ items = data.get_items(group="Набор1")
 позволяет получить все данные
 
 ```python
-data = Data()
+data = QuestionsData()
 all_data = data.get_all_data()
 ```
 
@@ -87,7 +87,7 @@ all_data = data.get_all_data()
 позволяет получить вопрос из файла json
 
 ```python
-data = Data()
+data = QuestionsData()
 data_question = data.get_guestion(
   group="Набор1",
   title="Вопрос1",
@@ -102,7 +102,7 @@ data_question = data.get_guestion(
 позволяет получить случайный вопрос из файла json
 
 ```python
-data = Data()
+data = QuestionsData()
 data_question = data.get_rand_question(
   group="Набор1",
   quentity_items=5
@@ -127,7 +127,7 @@ question = Question()
 позволяет загрузить данные для отдельно взятого вопроса
 
 ```python
-data = Data()
+data = QuestionsData()
 data_question = data.get_rand_question()
 
 question = Question()

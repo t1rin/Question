@@ -6,7 +6,7 @@ from random import randint, choice, shuffle
 logger = logging.getLogger(__name__)
 
 
-class Data:
+class QuestionsData:
     def __init__(self, path_to_json=None):
         self._json_name = path_to_json
 
@@ -96,7 +96,7 @@ class Data:
                 new_dicts[key] = self._recursion_update(*values)
         return new_dicts
 
-    def add_data(self, group: str, key: str, value: str) -> 'Data':
+    def add_data(self, group: str, key: str, value: str) -> 'QuestionsData':
         if not self._is_normal_file():
             self._create_file()
         if any(not isinstance(name, str) for name in [group, key, value]):
@@ -119,7 +119,7 @@ class Data:
 
         return self
 
-    def load_json(self, data: dict = {}) -> 'Data':
+    def load_json(self, data: dict = {}) -> 'QuestionsData':
         logger.warning("С недавнего периода load_json поменял свой функционал (подробнее на https://github.com/t1rin/Question)")
         if self._is_normal_data(data):
             new_data = self._recursion_update(self._data, data)
@@ -238,3 +238,8 @@ class Data:
             [(keys[indexes[i]], indexes[i] == main_index)
             for i in range(quentity_items)]
         )
+
+
+class Data:
+    def __init__(self, *args, **kwargs):
+        logger.error("Использование Data устарело. Используйте QuestionsData вместо Data...")

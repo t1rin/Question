@@ -30,7 +30,7 @@ def main_loop():
 
 
 if __name__ == "__main__":
-    data = Data()
+    data = QuestionsData("data.json")
     question = Question()
     try: main_loop()
     except Exception as error:
