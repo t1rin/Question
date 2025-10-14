@@ -24,13 +24,13 @@
 data = Data(path_to_json="my_json.json")
 ```
 
-загрузка данных из файла `my_json.json`. По умолчанию `path_to_json="data.json"`
+загрузка данных из файла `my_json.json`. Если `path_to_json` не указан, то работа с json файлом произоводится не будет
 
 > далее методы класса `Data`
 
 #### — метод `load_json`
 
-позволяет загрузить новые данные в json файл
+позволяет загрузить новые данные из словаря
 
 ```python
 data = Data()
@@ -71,6 +71,16 @@ items = data.get_items(group="Набор1")
 ```
 
 получим элементы группы `Набор1`
+
+#### — метод `get_all_data`
+
+позволяет получить все данные
+
+```python
+data = Data()
+all_data = data.get_all_data()
+```
+
 
 #### — метод `get_question`
 

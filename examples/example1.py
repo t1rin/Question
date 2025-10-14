@@ -32,9 +32,7 @@ def main_loop():
 if __name__ == "__main__":
     data = Data()
     question = Question()
-    while True:
-        try:
-            main_loop()
-        except Exception:
-            pass
+    try: main_loop()
+    except Exception as error:
+        print(f"Возникла ошибка : {error} !")
 

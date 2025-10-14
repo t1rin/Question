@@ -7,14 +7,16 @@ logger = logging.getLogger(__name__)
 
 
 class Data:
-    def __init__(self, path_to_json="data.json"):
+    def __init__(self, path_to_json=None):
         self._json_name = path_to_json
-        self._data_json = None
 
-        if not self._is_normal_file():
-            self._create_json()
-        with open(self._json_name, "r", encoding="utf-8") as json_file:
-            self._data_json = json.loads(json_file.read())
+        if path_to_json:
+            if not self._is_normal_file():
+                self._create_file()
+            with open(self._json_name, "r", encoding="utf-8") as json_file:
+                self._data = json.loads(json_file.read())
+        else:
+            self._data = {}
 
     def _is_normal_data(self, data: dict) -> bool:
         if not all(isinstance(group, str) for group in data.keys()):
@@ -43,7 +45,7 @@ class Data:
         
         return self._is_normal_data(data)
 
-    def _create_json(self) -> None:
+    def _create_file(self) -> None:
         index = 0
         name = self._json_name.split(".")
         while os.path.exists(self._json_name):
@@ -57,9 +59,9 @@ class Data:
 
         logger.info("Создан новый " + self._json_name)
 
-    def _update_json(self) -> None:
+    def _update_file(self) -> None:
         with open(self._json_name, "w", encoding="utf-8") as json_file:
-            data = json.dumps(self._data_json, ensure_ascii=False, indent=4)
+            data = json.dumps(self._data, ensure_ascii=False, indent=4)
             json_file.write(data)
 
     def _recursion_update(self, *dicts):
@@ -96,57 +98,62 @@ class Data:
 
     def add_data(self, group: str, key: str, value: str) -> 'Data':
         if not self._is_normal_file():
-            self._create_json()
+            self._create_file()
         if any(not isinstance(name, str) for name in [group, key, value]):
             logger.error("Ожидается group -> [str], key -> [str], value -> [str]")
             return self
-        if group not in self._data_json.keys():
-            self._data_json[group] = {}
+        if group not in self._data.keys():
+            self._data[group] = {}
 
-        if key not in self._data_json[group].keys():
-            self._data_json[group][key] = value
+        if key not in self._data[group].keys():
+            self._data[group][key] = value
         else:
-            values = self._data_json[group][key]
+            values = self._data[group][key]
             if isinstance(values, str):
-                self._data_json[group][key] = (values, value)
+                self._data[group][key] = (values, value)
             else:
-                self._data_json[group][key] = (*values, value)
+                self._data[group][key] = (*values, value)
         
-        self._update_json()
+        if self._json_name:
+            self._update_file()
 
         return self
 
     def load_json(self, data: dict = {}) -> 'Data':
         logger.warning("С недавнего периода load_json поменял свой функционал (подробнее на https://github.com/t1rin/Question)")
         if self._is_normal_data(data):
-            new_data = self._recursion_update(self._data_json, data)
-            self._data_json = new_data
-            self._update_json()
+            new_data = self._recursion_update(self._data, data)
+            self._data = new_data
+            if self._json_name:
+                self._update_file()
         else:
             logger.error("json данные не имеют смысла")
 
     def get_groups(self) -> list:
-        return list(self._data_json.keys())
+        return list(self._data.keys())
     
     def get_items(self, group: str, key_is_main=True) -> list | None:
         if not isinstance(group, str):
             logger.error("Ожидается group -> [str]")
             return
-        if group not in self._data_json.keys():
+        if group not in self._data.keys():
             logger.error("Не найдена группа " + group)
             return
         
         if key_is_main:
-            return list(self._data_json[group])
+            return list(self._data[group])
         else:
             values = set()
-            for value in self._data_json[group].values():
+            for value in self._data[group].values():
                 if isinstance(value, str):
                     values.add(value)
                 else:
                     values.update(value)
             return sorted(list(values))
     
+    def get_all_data(self) -> dict:
+        return self._data
+
     def get_question(self, group, title, 
                      key_is_main=True, quentity_items=3) -> tuple | None:
         if not isinstance(quentity_items, int) or quentity_items < 2:
@@ -162,7 +169,7 @@ class Data:
             logger.error("title \"" + title + "\" не найден")
             return
             
-        items = self._data_json[group]
+        items = self._data[group]
         keys = [*items.keys()]
         values = [*items.values()]
 
@@ -201,14 +208,14 @@ class Data:
 
     def get_rand_question(self, group=None, 
                           key_is_main=True, quentity_items=3) -> tuple | None:
-        if self._data_json is None or len(self._data_json) == 0:
+        if self._data is None or len(self._data) == 0:
             logger.warning("Вопросов нет")
             return
         
         if group is None:
             group = choice(self.get_groups())
 
-        items = self._data_json[group]
+        items = self._data[group]
         keys = [*items.keys()]
         values = [*items.values()]
         indexes = [randint(0, len(items)-1) 
