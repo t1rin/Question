@@ -26,7 +26,9 @@ data = QuestionsData(path_to_json="my_json.json")
 
 загрузка данных из файла `my_json.json`. Если `path_to_json` не указан, то работа с json файлом произоводится не будет
 
-> далее методы класса `QuestionsData`
+<details>
+<summary>методы класса `QuestionsData`</summary>
+<p>
 
 #### — метод `load_json`
 
@@ -111,6 +113,10 @@ data_question = data.get_rand_question(
 
 получим данные случайного вопроса из группы `"Набор1"` с количеством вариантов ответа равным пяти (если `group` не задан, вопрос будет выбран из случайной группы)
 
+</details>
+</p>
+
+
 ### —> <u>`questions/question.py`</u>
 
 \- отвечает за отдельно взятый вопрос
@@ -120,7 +126,9 @@ data_question = data.get_rand_question(
 question = Question()
 ```
 
-> далее методы класса `Question`
+<details>
+<summary>методы класса `Question`</summary>
+<p>
 
 #### — метод `load`
 
@@ -176,6 +184,9 @@ question = Question()
 answer = ...
 right = question.is_right(answer)
 ```
+
+</details>
+</p>
 
 # пример `main.py`:
 

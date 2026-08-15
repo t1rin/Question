@@ -1,6 +1,7 @@
 /__pycache__
 /questions/__pycache__
 /archive
+/.vs
 
 test.py
 data_.json
