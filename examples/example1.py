@@ -1,3 +1,6 @@
+import os, sys
+sys.path.append(os.path.dirname(os.path.dirname(__file__)))
+
 from questions import *
 
 KEY_IS_MAIN = True
@@ -21,16 +24,15 @@ def get_answer_index(max_index):
         print("Некорректный номер ответа!")
 
 
-def ask_question(question, data):
-    data_question = data.get_rand_question(key_is_main=KEY_IS_MAIN)
-    if data_question is None:
+def ask_question(data):
+    question = data.get_rand_question(key_is_main=KEY_IS_MAIN)
+    if question is None:
         print("Добавьте вопросов!")
         return False
 
-    question.load(data_question)
-    answers = question.get_answers()
+    answers = question.all_answers
 
-    show_question(question.get_title(), answers)
+    show_question(question.title, answers)
     print("Каков ответ?" if KEY_IS_MAIN else "Каков вопрос?")
 
     while True:
@@ -41,12 +43,12 @@ def ask_question(question, data):
         print("Ответ неверный! Попробуй снова")
 
 
-def main_loop(question, data):
-    while ask_question(question, data):
+def main_loop(data):
+    while ask_question(data):
         if input("Продолжить? (да/нет): ").lower() != 'да':
             break
     print("Игра завершена!")
 
 
 if __name__ == "__main__":
-    main_loop(Question(), QuestionsData("data.example.json"))
+    main_loop(QuestionsData("data.example.json"))

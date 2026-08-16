@@ -160,8 +160,33 @@ class QuestionsData:
     def get_all_data(self) -> dict:
         return self._data
 
+    def _choice_value(self, value):
+        return value if isinstance(value, str) else choice(value)
+
+    def _building_question(self, group, keys, values, indexes, main_index, key_is_main) -> Question:
+        all_answers = []
+        right_answers = []
+        if key_is_main:
+            title = keys[main_index]
+            for idx in indexes:
+                answer = self._choice_value(values[idx])
+                all_answers.append(answer)
+                if idx == main_index:
+                    right_answers.append(answer)
+        else:
+            title = self._choice_value(values[main_index])
+            for idx in indexes:
+                answer = keys[idx]
+                all_answers.append(answer)
+                if idx == main_index:
+                    right_answers.append(answer)
+
+        return Question(group=group, title=title,
+                        right_answers=right_answers, 
+                        all_answers=all_answers)
+
     def get_question(self, group: str, title: str, 
-                     key_is_main: bool = True, quentity_items: int = 3) -> tuple | None:
+                     key_is_main: bool = True, quentity_items: int = 3) -> Question | None:
         if not isinstance(quentity_items, int) or quentity_items < 2:
             logger.error("Некорректное количество вариантов ответа")
             return None
@@ -197,25 +222,11 @@ class QuestionsData:
         indexes = [randint(0, len(items)-1) 
                    for _ in range(quentity_items-1)] + [main_index] # TODO: добавить опред. процент, выше которого правильных ответов быть не должно
         shuffle(indexes)
-        
-        if key_is_main:
-            return (
-                group, keys[main_index],
-                [(values[indexes[i]] if isinstance(values[indexes[i]], str) 
-                 else choice(values[indexes[i]]), 
-                 indexes[i] == main_index) for i in range(quentity_items)]
-            )
-            
-        return (
-            group,
-            values[main_index] if isinstance(values[main_index], str)
-            else choice(values[main_index]),
-            [(keys[indexes[i]], indexes[i] == main_index)
-            for i in range(quentity_items)]
-        )
+
+        return self._building_question(group, keys, values, indexes, main_index, key_is_main)
 
     def get_rand_question(self, group=None, 
-                          key_is_main=True, quentity_items=3) -> tuple | None:
+                          key_is_main=True, quentity_items=3) -> Question | None:
         if self._data is None or len(self._data) == 0:
             logger.warning("Вопросов нет")
             return None
@@ -227,22 +238,8 @@ class QuestionsData:
         keys = [*items.keys()]
         values = [*items.values()]
         indexes = [randint(0, len(items)-1) 
-                   for _ in range(quentity_items)] # TODO: добавить опред. процент, выше которого правильных ответов быть не должно
+                   for _ in range(quentity_items)]
         
         main_index = choice(indexes)
-
-        if key_is_main:
-            return (
-                group, keys[main_index],
-                [(values[indexes[i]] if isinstance(values[indexes[i]], str) 
-                 else choice(values[indexes[i]]), 
-                 indexes[i] == main_index) for i in range(quentity_items)]
-            )
         
-        return (
-            group,
-            values[main_index] if isinstance(values[main_index], str)
-            else choice(values[main_index]), 
-            [(keys[indexes[i]], indexes[i] == main_index)
-            for i in range(quentity_items)]
-        )
+        return self._building_question(group, keys, values, indexes, main_index, key_is_main)

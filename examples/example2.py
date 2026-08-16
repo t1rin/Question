@@ -29,7 +29,6 @@ class App:
 
         # инизиализация Модуля + загрузка данных
         self._data = QuestionsData("data.example.json")
-        self._question = Question()
 
         if self._data is None:
             self.active_loop = False
@@ -41,22 +40,20 @@ class App:
             if self.rand_key_value:
                 self.key_is_main = bool(random.randint(0,1))
 
-            data_question = self._data.get_rand_question(
+            question = self._data.get_rand_question(
                 key_is_main=self.key_is_main, quentity_items=self.quentity_items)
 
-            if data_question is None:
+            if question is None:
                 self.show_message("Добавьте вопросов!")
                 return
-            
-            self._question.load(data_question)
             
             right = None
             while not right:
                 self.clear_screen()
 
-                self.show_question(self._question.get_title(),
-                                   self._question.get_group(),
-                                   *self._question.get_answers())
+                self.show_question(question.title,
+                                   question.group,
+                                   *question.all_answers)
 
                 if self._active_warning:
                     if self._index_warning is None:
@@ -72,14 +69,14 @@ class App:
 
                 try:
                     index = int(self.get_answer(msg="Ответ > ")) - 1
-                    if not (0 <= index < len(self._question.get_answers())):
+                    if not (0 <= index < len(question.all_answers)):
                         raise ValueError
                 except ValueError:
                     self._active_warning = True
                     continue
 
-                right = self._question.is_right(
-                    self._question.get_answers()[index])
+                right = question.is_right(
+                    question.all_answers[index])
                 if right:
                     self.show_flash(color="green")
                     self.show_message("✅ Молодец! Ответ верный!")
