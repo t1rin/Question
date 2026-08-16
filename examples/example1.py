@@ -1,38 +1,52 @@
-import os, sys
-sys.path.append(os.path.dirname(os.path.dirname(__file__)))
-
 from questions import *
 
+KEY_IS_MAIN = True
 
-active_loop = True  # вспомогательная переменная
-key_is_main = True  # при значении False вопросы поменяются с ответами
-question = None     # объявление имени для будущего экземпляра
-data = None         # объявление имени для будущего экземпляра
 
-def show_question(question, *answers):
-    print(question)
-    for i in range(len(answers)):
-        print(f"{i}. {answers[i]}")
+def show_question(title, answers):
+    print(title)
+    for i, answer in enumerate(answers):
+        print(f"{i}. {answer}")
 
-def main_loop():
-    while active_loop:
-        data_question = data.get_rand_question(key_is_main=key_is_main)
-        if data_question is None:
-            print("Добавьте вопросов!")
-            return
-        question.load(data_question)
-        show_question(question.get_title(), *question.get_answers())
-        print("Каков ответ?" if key_is_main else "Каков вопрос?")
-        while not question.is_right(question.get_answers()[int(input(">> "))]):
-            print("Ответ неверный! Попробуй снова")
-        else:
+
+def get_answer_index(max_index):
+    while True:
+        raw = input(">> ")
+        if not raw.isdigit() and not (raw.startswith('-') and raw[1:].isdigit()):
+            print("Пожалуйста, введите число!")
+            continue
+        index = int(raw)
+        if 0 <= index < max_index:
+            return index
+        print("Некорректный номер ответа!")
+
+
+def ask_question(question, data):
+    data_question = data.get_rand_question(key_is_main=KEY_IS_MAIN)
+    if data_question is None:
+        print("Добавьте вопросов!")
+        return False
+
+    question.load(data_question)
+    answers = question.get_answers()
+
+    show_question(question.get_title(), answers)
+    print("Каков ответ?" if KEY_IS_MAIN else "Каков вопрос?")
+
+    while True:
+        index = get_answer_index(len(answers))
+        if question.is_right(answers[index]):
             print("Молодец! Ответ верный! \n")
+            return True
+        print("Ответ неверный! Попробуй снова")
+
+
+def main_loop(question, data):
+    while ask_question(question, data):
+        if input("Продолжить? (да/нет): ").lower() != 'да':
+            break
+    print("Игра завершена!")
 
 
 if __name__ == "__main__":
-    data = QuestionsData("data.json")
-    question = Question()
-    try: main_loop()
-    except Exception as error:
-        print(f"Возникла ошибка : {error} !")
-
+    main_loop(Question(), QuestionsData("data.example.json"))
