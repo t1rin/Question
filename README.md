@@ -30,7 +30,7 @@ data = QuestionsData(path_to_json="my_json.json")
 <summary>методы класса `QuestionsData`</summary>
 <p>
 
-#### — метод `load_json`
+#### — метод `load_data`
 
 позволяет загрузить новые данные из словаря
 
@@ -38,16 +38,16 @@ data = QuestionsData(path_to_json="my_json.json")
 data = QuestionsData()
 
 data_dict = {"Набор4": {"Вопрос1": "Ответ1", "Вопрос2": "Ответ2"}}
-data.load_json(data_dict)
+data.load_data(data_dict)
 ```
 
-#### — метод `add_data`
+#### — метод `add_question`
 
 позволяет добавлять вопросы (поддерживается только по отному вопросу и ответу за раз)
 
 ```python
 data = QuestionsData()
-data.add_data(
+data.add_question(
   group="Набор4",
   key="Вопрос1",
   value="Ответ1"
@@ -188,10 +188,6 @@ right = question.is_right(answer)
 </details>
 </p>
 
-# пример `main.py`:
+# Примеры:
 
-<div align="center">
-  <img src="src/1.png">
-</div>
-
-остальные примеры в `/examples`
+примеры в `/examples`
