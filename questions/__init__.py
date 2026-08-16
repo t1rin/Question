@@ -1,7 +1,7 @@
 __author__ = "T1rin"
 
-from questions.data import QuestionsData, Data
+from questions.data import QuestionsData
 from questions.question import Question
 
 
-__all__ = ["QuestionsData", "Question", "Data"]
+__all__ = ["QuestionsData", "Question"]

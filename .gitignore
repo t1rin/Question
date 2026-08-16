@@ -3,6 +3,6 @@
 /archive
 /.vs
 
-test.py
+test*.py
 data_.json
 TODO.md

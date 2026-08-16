@@ -3,37 +3,28 @@ import json
 import os
 from random import randint, choice, shuffle
 
+from .models import *
+
+
 logger = logging.getLogger(__name__)
 
 
 class QuestionsData:
-    def __init__(self, path_to_json=None):
-        self._json_name = path_to_json
+    def __init__(self, path_to_json: str | None = None) -> None:
+        self._json_name: str | None = path_to_json
 
-        if path_to_json:
-            if not self._is_normal_file():
-                self._create_file()
-            with open(self._json_name, "r", encoding="utf-8") as json_file:
-                self._data = json.loads(json_file.read())
-        else:
-            self._data = {}
+        self._init_groups(data={})
+        if path_to_json is not None:
+            if not self._is_normal_json():
+                self._create_json()
+            self._read_json()
 
-    def _is_normal_data(self, data: dict) -> bool:
-        if not all(isinstance(group, str) for group in data.keys()):
-            logger.error("Ожидается наименование группы")
-            return False
-        for item in data.values():
-            if not isinstance(item, dict):
-                logger.error("Ожидалось значение по наименованию группы (dict)")
-                return False
-            for key, value in item.items():
-                if isinstance(key, str) and (isinstance(value, str) or isinstance(value, list)):
-                    continue
-                logger.error("Ожидалось вопрос -> [str]; ответ -> [str | list]")
-                return False
-        return True
+    def _init_groups(self, data: dict) -> None:
+        self._groups = QuestionGroups(data=data)
+        self._data = self._groups.data
 
-    def _is_normal_file(self) -> bool:
+    def _is_normal_json(self) -> bool:
+        assert self._json_name is not None
         if not os.path.exists(self._json_name):
             return False
         try:
@@ -45,8 +36,15 @@ class QuestionsData:
         
         return self._is_normal_data(data)
 
-    def _create_file(self) -> None:
+    def _is_normal_data(self, data: dict) -> bool:
+        try: QuestionGroups(data=data)
+        except ValidationError:
+            return False
+        return True
+
+    def _create_json(self) -> None:
         index = 0
+        assert self._json_name is not None
         name = self._json_name.split(".")
         while os.path.exists(self._json_name):
             if os.path.exists((str(index)+".").join(name)):
@@ -59,28 +57,35 @@ class QuestionsData:
 
         logger.info("Создан новый " + self._json_name)
 
-    def _update_file(self) -> None:
+    def _read_json(self) -> None:
+        assert self._json_name is not None
+        with open(self._json_name, "r", encoding="utf-8") as json_file:
+            data = json.loads(json_file.read())
+            self._init_groups(data=data)
+
+    def _update_json(self) -> None:
+        assert self._json_name is not None
         with open(self._json_name, "w", encoding="utf-8") as json_file:
             data = json.dumps(self._data, ensure_ascii=False, indent=4)
             json_file.write(data)
 
-    def _recursion_update(self, *dicts):
-        if len(dicts) == 1: return dicts[0]
-        keys = set().union(*[set(d.keys()) for d in dicts])
-        if len(keys) == sum([len(i) for i in dicts]):
+    def _merge(self, *dictionaries: dict) -> dict:
+        if len(dictionaries) == 1: return dictionaries[0]
+        groups_names = set().union(*[set(d.keys()) for d in dictionaries])
+        if len(groups_names) == sum([len(i) for i in dictionaries]):
             return dict(((i[0], *i[1]) if isinstance(i[1], list) else (i[0], i[1]))
-                        for j in dicts for i in j.items())
+                        for j in dictionaries for i in j.items())
         new_dicts = {}
-        for key in keys:
+        for group_name in groups_names:
             values = []
-            for d in dicts:
-                if key in d.keys():
-                    values.append(d[key])
+            for dictionary in dictionaries:
+                if group_name in dictionary.keys():
+                    values.append(dictionary[group_name])
             if all(isinstance(i, str) for i in values):
                 if len(values:=list(set(values))) == 1:
-                    new_dicts[key] = values[0]
+                    new_dicts[group_name] = values[0]
                 else:
-                    new_dicts[key] = values
+                    new_dicts[group_name] = values
             elif any(isinstance(i, list) for i in values):
                 new_values = []
                 for value in values:
@@ -89,16 +94,16 @@ class QuestionsData:
                     else:
                         new_values.append(value)
                 if len(new_values := list(set(new_values))) == 1:
-                    new_dicts[key] = new_values[0]
+                    new_dicts[group_name] = new_values[0]
                 else:
-                    new_dicts[key] = new_values
+                    new_dicts[group_name] = new_values
             else:
-                new_dicts[key] = self._recursion_update(*values)
+                new_dicts[group_name] = self._merge(*values)
         return new_dicts
 
-    def add_data(self, group: str, key: str, value: str) -> 'QuestionsData':
-        if not self._is_normal_file():
-            self._create_file()
+    def add_question(self, group: str, key: str, value: str) -> 'QuestionsData':
+        if not self._is_normal_json():
+            self._create_json()
         if any(not isinstance(name, str) for name in [group, key, value]):
             logger.error("Ожидается group -> [str], key -> [str], value -> [str]")
             return self
@@ -110,41 +115,42 @@ class QuestionsData:
         else:
             values = self._data[group][key]
             if isinstance(values, str):
-                self._data[group][key] = (values, value)
+                if value != values:
+                    self._data[group][key] = [values, value]
             else:
-                self._data[group][key] = (*values, value)
+                self._data[group][key] = list(set([*values, value]))
         
         if self._json_name:
-            self._update_file()
+            self._update_json()
 
         return self
 
-    def load_json(self, data: dict = {}) -> 'QuestionsData':
-        logger.warning("С недавнего периода load_json поменял свой функционал (подробнее на https://github.com/t1rin/Question)")
+    def load_data(self, data: dict) -> 'QuestionsData':
         if self._is_normal_data(data):
-            new_data = self._recursion_update(self._data, data)
-            self._data = new_data
+            new_data = self._merge(self._data, data)
+            self._init_groups(data=new_data)
             if self._json_name:
-                self._update_file()
+                self._update_json()
         else:
             logger.error("json данные не имеют смысла")
+        return self
 
     def get_groups(self) -> list:
         return list(self._data.keys())
     
-    def get_items(self, group: str, key_is_main=True) -> list | None:
-        if not isinstance(group, str):
-            logger.error("Ожидается group -> [str]")
-            return
-        if group not in self._data.keys():
-            logger.error("Не найдена группа " + group)
-            return
+    def get_items(self, group_name: str, key_is_main=True) -> list | None:
+        if not isinstance(group_name, str):
+            logger.error("Ожидается group_name -> [str]")
+            return None
+        if group_name not in self._data.keys():
+            logger.error("Не найдена группа " + group_name)
+            return None
         
         if key_is_main:
-            return list(self._data[group])
+            return list(self._data[group_name])
         else:
             values = set()
-            for value in self._data[group].values():
+            for value in self._data[group_name].values():
                 if isinstance(value, str):
                     values.add(value)
                 else:
@@ -154,27 +160,30 @@ class QuestionsData:
     def get_all_data(self) -> dict:
         return self._data
 
-    def get_question(self, group, title, 
-                     key_is_main=True, quentity_items=3) -> tuple | None:
+    def get_question(self, group: str, title: str, 
+                     key_is_main: bool = True, quentity_items: int = 3) -> tuple | None:
         if not isinstance(quentity_items, int) or quentity_items < 2:
             logger.error("Некорректное количество вариантов ответа")
-            return 
+            return None
         if any(not isinstance(name, str) for name in [title, group]):
             logger.error("Ожидается group -> [str], title -> [str]")
-            return 
+            return None
         if group not in self.get_groups():
             logger.error("Не найдена группа " + group)
-            return
-        if title not in self.get_items(group, key_is_main=key_is_main):
+            return None
+
+        items_list = self.get_items(group, key_is_main=key_is_main)
+        if items_list is None or title not in items_list:
             logger.error("title \"" + title + "\" не найден")
-            return
+            return None
             
         items = self._data[group]
         keys = [*items.keys()]
         values = [*items.values()]
 
         main_index = None
-        if key_is_main: main_index = keys.index(title)
+        if key_is_main:
+            main_index = keys.index(title)
         else:
             for value in values:
                 if (isinstance(value, str) and title == value) or \
@@ -183,7 +192,7 @@ class QuestionsData:
                     break
             else:
                 logger.error("Не найдено title")
-                return
+                return None
 
         indexes = [randint(0, len(items)-1) 
                    for _ in range(quentity_items-1)] + [main_index] # TODO: добавить опред. процент, выше которого правильных ответов быть не должно
@@ -205,12 +214,11 @@ class QuestionsData:
             for i in range(quentity_items)]
         )
 
-
     def get_rand_question(self, group=None, 
                           key_is_main=True, quentity_items=3) -> tuple | None:
         if self._data is None or len(self._data) == 0:
             logger.warning("Вопросов нет")
-            return
+            return None
         
         if group is None:
             group = choice(self.get_groups())
@@ -238,8 +246,3 @@ class QuestionsData:
             [(keys[indexes[i]], indexes[i] == main_index)
             for i in range(quentity_items)]
         )
-
-
-class Data:
-    def __init__(self, *args, **kwargs):
-        logger.error("Использование Data устарело. Используйте QuestionsData вместо Data...")
