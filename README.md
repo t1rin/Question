@@ -15,7 +15,7 @@
 
 ## Модуль `questions`
 
-### —> <u>`questions/data.py`</u>
+### класс QuestionsData
 
 \- отвечает за хранение данных о всех вопросах
 
@@ -27,7 +27,7 @@ data = QuestionsData(path_to_json="my_json.json")
 загрузка данных из файла `my_json.json`. Если `path_to_json` не указан, то работа с json файлом произоводится не будет
 
 <details>
-<summary>методы класса `QuestionsData`</summary>
+<summary>методы класса <u>QuestionsData</u></summary>
 <p>
 
 #### — метод `load_data`
@@ -90,14 +90,14 @@ all_data = data.get_all_data()
 
 ```python
 data = QuestionsData()
-data_question = data.get_guestion(
+question = data.get_guestion(
   group="Набор1",
   title="Вопрос1",
   quentity_items=5
 )
 ```
 
-получим данные вопроса `Вопрос1` из группы `Набор1` с количеством вариантов ответа равным пяти
+получим вопрос `Вопрос1` из группы `Набор1` с количеством вариантов ответа равным пяти
 
 #### — метод `get_rand_question`
 
@@ -105,84 +105,79 @@ data_question = data.get_guestion(
 
 ```python
 data = QuestionsData()
-data_question = data.get_rand_question(
+question = data.get_rand_question(
   group="Набор1",
   quentity_items=5
 )
 ```
 
-получим данные случайного вопроса из группы `"Набор1"` с количеством вариантов ответа равным пяти (если `group` не задан, вопрос будет выбран из случайной группы)
+получим случайный вопрос из группы `"Набор1"` с количеством вариантов ответа равным пяти (если `group` не задан, вопрос будет выбран из случайной группы)
 
 </details>
 </p>
 
 
-### —> <u>`questions/question.py`</u>
+### класс Question
 
 \- отвечает за отдельно взятый вопрос
 
 ```python
 # Инициализация:
 question = Question()
+
+# или
+
+data = QuestionsData(path_to_json="my_json.json")
+question = data.data.get_question(...)
+
+# или
+
+data = QuestionsData(path_to_json="my_json.json")
+question = data.data.get_rand_question(...)
 ```
 
 <details>
-<summary>методы класса `Question`</summary>
+<summary>свойства и методы <u>Question</u></summary>
 <p>
 
-#### — метод `load`
+#### — свойство `title`
 
-позволяет загрузить данные для отдельно взятого вопроса
+заголовок вопроса
 
 ```python
-data = QuestionsData()
-data_question = data.get_rand_question()
-
-question = Question()
-question.load(data_question)
+question.title
 ```
 
-получение и загрузка данных случайного вопроса
+#### — свойство `group`
 
-#### — метод `get_title`
-
-позволяет получить заголовок вопроса
+наименование группы вопроса
 
 ```python
-question = Question()
-...
-title = question.get_title()
+question.group
 ```
 
-#### — метод `get_group`
+#### — свойство `answers`
 
-позволяет получить наименование группы вопроса
+список всех ответов к вопросу
 
 ```python
-question = Question()
-...
-group = question.get_group()
+question.answers
 ```
 
-#### — метод `get_answers`
+#### — свойство `right_answers`
 
-позволяет получить список всех ответов к вопросу (правильных и неправильных)
+список правильных ответов к вопросу
 
 ```python
-question = Question()
-...
-answers = question.get_answers()
+question.right_answers
 ```
 
 #### — метод `is_right`
 
-позволяет проверить правильность выбранного ответа
+позволяет проверить правильность выбранного ответа (`answer`)
 
 ```python
-question = Question()
-...
-answer = ...
-right = question.is_right(answer)
+question.is_right(answer)
 ```
 
 </details>
