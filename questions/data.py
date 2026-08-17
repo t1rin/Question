@@ -102,7 +102,7 @@ class QuestionsData:
         return new_dicts
 
     def add_question(self, group: str, key: str, value: str) -> 'QuestionsData':
-        if not self._is_normal_json():
+        if self._json_name and not self._is_normal_json():
             self._create_json()
         if any(not isinstance(name, str) for name in [group, key, value]):
             logger.error("Ожидается group -> [str], key -> [str], value -> [str]")
@@ -165,24 +165,24 @@ class QuestionsData:
 
     def _building_question(self, group, keys, values, indexes, main_index, key_is_main) -> Question:
         all_answers = []
-        right_answers = []
+        right_answers = set()
         if key_is_main:
             title = keys[main_index]
             for idx in indexes:
                 answer = self._choice_value(values[idx])
                 all_answers.append(answer)
                 if idx == main_index:
-                    right_answers.append(answer)
+                    right_answers.add(answer)
         else:
             title = self._choice_value(values[main_index])
             for idx in indexes:
                 answer = keys[idx]
                 all_answers.append(answer)
                 if idx == main_index:
-                    right_answers.append(answer)
+                    right_answers.add(answer)
 
         return Question(group=group, title=title,
-                        right_answers=right_answers, 
+                        right_answers=list(right_answers), 
                         all_answers=all_answers)
 
     def get_question(self, group: str, title: str, 
