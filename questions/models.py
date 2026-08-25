@@ -1,13 +1,24 @@
 from pydantic import BaseModel, ValidationError
 
 
-Answer = str | list[str]
-QuestionGroup = dict[str, Answer]
+class QuestionValidationError(ValidationError):
+    pass
 
-class QuestionGroups(BaseModel):
-    data: dict[str, QuestionGroup]
 
-class Question(BaseModel):
+class JSONQGroups(BaseModel):
+    JSONAnswer = str | list[str]
+    JSONQuestionGroup = dict[str, JSONAnswer]
+    data: dict[str, JSONQuestionGroup]
+
+
+class StoredQuestionGroups(BaseModel):
+    Answer = tuple[str, bool]
+    Question = str
+    Group = str
+    data: dict[str, dict[Question, list[Answer]]]
+
+
+class QuestionItem(BaseModel):
     group: str | None = None
     title: str | None = None
     right_answers: list[str] = []

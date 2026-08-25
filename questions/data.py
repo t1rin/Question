@@ -3,7 +3,9 @@ import json
 import os
 from random import randint, choice, shuffle
 
-from .models import *
+from .models import (QuestionValidationError,
+                     StoredQuestionGroups, JSONQGroups,
+                     QuestionItem)
 
 
 logger = logging.getLogger(__name__)
@@ -20,7 +22,7 @@ class QuestionsData:
             self._read_json()
 
     def _init_groups(self, data: dict) -> None:
-        self._groups = QuestionGroups(data=data)
+        self._groups = JSONQGroups(data=data)
         self._data = self._groups.data
 
     def _is_normal_json(self) -> bool:
@@ -37,8 +39,8 @@ class QuestionsData:
         return self._is_normal_data(data)
 
     def _is_normal_data(self, data: dict) -> bool:
-        try: QuestionGroups(data=data)
-        except ValidationError:
+        try: JSONQGroups(data=data)
+        except QuestionValidationError:
             return False
         return True
 
@@ -163,7 +165,7 @@ class QuestionsData:
     def _choice_value(self, value):
         return value if isinstance(value, str) else choice(value)
 
-    def _building_question(self, group, keys, values, indexes, main_index, key_is_main) -> Question:
+    def _building_question(self, group, keys, values, indexes, main_index, key_is_main) -> QuestionItem:
         all_answers = []
         right_answers = set()
         if key_is_main:
@@ -181,12 +183,12 @@ class QuestionsData:
                 if idx == main_index:
                     right_answers.add(answer)
 
-        return Question(group=group, title=title,
-                        right_answers=list(right_answers), 
-                        all_answers=all_answers)
+        return QuestionItem(group=group, title=title,
+                            right_answers=list(right_answers),
+                            all_answers=all_answers)
 
     def get_question(self, group: str, title: str, 
-                     key_is_main: bool = True, quentity_items: int = 3) -> Question | None:
+                     key_is_main: bool = True, quentity_items: int = 3) -> QuestionItem | None:
         if not isinstance(quentity_items, int) or quentity_items < 2:
             logger.error("Некорректное количество вариантов ответа")
             return None
@@ -226,7 +228,7 @@ class QuestionsData:
         return self._building_question(group, keys, values, indexes, main_index, key_is_main)
 
     def get_rand_question(self, group=None, 
-                          key_is_main=True, quentity_items=3) -> Question | None:
+                          key_is_main=True, quentity_items=3) -> QuestionItem | None:
         if self._data is None or len(self._data) == 0:
             logger.warning("Вопросов нет")
             return None
