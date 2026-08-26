@@ -1,7 +1,8 @@
 import logging
-import json
 import os
-from random import randint, choice, shuffle
+from random import randint, choice, shuffle, sample
+
+import orjson
 
 from .models import (ValidationError,
                      StoredQuestionGroups, JSONQGroups,
@@ -14,7 +15,8 @@ logger = logging.getLogger(__name__)
 class QuestionsData:
     def __init__(self, path_to_json: str | None = None) -> None:
         self._json_name: str | None = path_to_json
-
+        self._json_cache: bytes | None = None
+        
         self._init_groups(data={})
         if path_to_json is not None:
             if not self._is_normal_json():
@@ -24,16 +26,17 @@ class QuestionsData:
     def _init_groups(self, data: dict) -> None:
         self._groups = JSONQGroups(data=data)
         self._data = self._groups.data
+        self._invalidate_cache()
 
     def _is_normal_json(self) -> bool:
         assert self._json_name is not None
         if not os.path.exists(self._json_name):
             return False
         try:
-            with open(self._json_name, "r", encoding="utf-8") as json_file:
-                data = json.loads(json_file.read())
-        except:
-            logger.error("Некорректная структура json файла")
+            with open(self._json_name, "rb") as json_file:
+                data = orjson.loads(json_file.read())
+        except Exception as e:
+            logger.error(f"Некорректная структура json файла: {e}")
             return False
         
         return self._is_normal_data(data)
@@ -54,25 +57,32 @@ class QuestionsData:
                 continue
             os.rename(self._json_name, (str(index)+".").join(name))
 
-        with open(self._json_name, "w", encoding="utf-8") as json_file:
-            json_file.write("{}")
+        with open(self._json_name, "wb") as json_file:
+            json_file.write(orjson.dumps({}))
 
         logger.info("Создан новый " + self._json_name)
 
     def _read_json(self) -> None:
         assert self._json_name is not None
-        with open(self._json_name, "r", encoding="utf-8") as json_file:
-            data = json.loads(json_file.read())
+        with open(self._json_name, "rb") as json_file:
+            data = orjson.loads(json_file.read())
             self._init_groups(data=data)
 
     def _update_json(self) -> None:
         assert self._json_name is not None
-        with open(self._json_name, "w", encoding="utf-8") as json_file:
-            data = json.dumps(self._data, ensure_ascii=False, indent=4)
+        with open(self._json_name, "wb") as json_file:
+            data = orjson.dumps(
+                self._data, 
+                option=orjson.OPT_INDENT_2 | orjson.OPT_SORT_KEYS)
             json_file.write(data)
+        self._invalidate_cache()
+
+    def _invalidate_cache(self) -> None:
+        self._json_cache = None
 
     def _merge(self, *dictionaries: dict) -> dict:
-        if len(dictionaries) == 1: return dictionaries[0]
+        if len(dictionaries) == 1:
+            return dictionaries[0]
         groups_names = set().union(*[set(d.keys()) for d in dictionaries])
         if len(groups_names) == sum([len(i) for i in dictionaries]):
             return dict((i[0], i[1]) for j in dictionaries for i in j.items())
@@ -159,12 +169,30 @@ class QuestionsData:
             return sorted(list(values))
     
     def get_all_data(self) -> dict:
+        """Получить все данные в виде словаря"""
         return self._data
+
+    def get_all_data_bytes(self) -> bytes:
+        """Получить все данные в виде сериализованного JSON (с кэшированием)"""
+        if self._json_cache is not None:
+            return self._json_cache
+        
+        self._json_cache = orjson.dumps(
+            self._data,
+            option=orjson.OPT_INDENT_2 | orjson.OPT_SORT_KEYS
+        )
+        return self._json_cache
+
+    def get_all_data_str(self) -> str:
+        """Получить все данные в виде JSON строки (с кэшированием)"""
+        return self.get_all_data_bytes().decode('utf-8')
 
     def _choice_value(self, value):
         return value if isinstance(value, str) else choice(value)
 
-    def _building_question(self, group, keys, values, indexes, main_index, key_is_main) -> QuestionItem:
+    def _building_question(self, group, keys,
+                           values, indexes, main_index,
+                           key_is_main) -> QuestionItem:
         all_answers = []
         right_answers = set()
         if key_is_main:
@@ -185,6 +213,16 @@ class QuestionsData:
         return QuestionItem(group=group, title=title,
                             right_answers=list(right_answers),
                             all_answers=all_answers)
+
+    def _pick_wrong_indexes(self, quantity: int, main_index: int, count: int) -> list[int]:
+        """Уникальные индексы неправильных ответов, не совпадающие с main_index."""
+        available = [i for i in range(quantity) if i != main_index]
+        if count > len(available):
+            logger.warning(
+                "Недостаточно уникальных вариантов ответа (нужно %s, доступно %s), "
+                "возможны повторы", count, len(available))
+            return [choice(available) for _ in range(count)] if available else []
+        return sample(available, count)
 
     def get_question(self, group: str, title: str, 
                      key_is_main: bool = True, quentity_items: int = 3) -> QuestionItem | None:
@@ -220,14 +258,14 @@ class QuestionsData:
                 logger.error("Не найдено title")
                 return None
 
-        indexes = [randint(0, len(items)-1) 
-                   for _ in range(quentity_items-1)] + [main_index] # TODO: добавить опред. процент, выше которого правильных ответов быть не должно
+        indexes = self._pick_wrong_indexes(len(items), main_index, quentity_items - 1)
+        indexes.append(main_index)
         shuffle(indexes)
 
         return self._building_question(group, keys, values, indexes, main_index, key_is_main)
 
-    def get_rand_question(self, group=None, 
-                          key_is_main=True, quentity_items=3) -> QuestionItem | None:
+    def get_rand_question(self, group=None, key_is_main=True,
+                          quantity_option=3) -> QuestionItem | None:
         if self._data is None or len(self._data) == 0:
             logger.warning("Вопросов нет")
             return None
@@ -236,11 +274,16 @@ class QuestionsData:
             group = choice(self.get_groups())
 
         items = self._data[group]
+        quantity_items = len(items)
+        count = min(quantity_option, quantity_items)
+        if count < quantity_option:
+            logger.warning(
+                "В группе %s меньше вопросов (%s), чем запрошено вариантов (%s)",
+                group, quantity_items, quantity_option)
         keys = [*items.keys()]
         values = [*items.values()]
-        indexes = [randint(0, len(items)-1) 
-                   for _ in range(quentity_items)]
-        
+        indexes = sample(range(quantity_items), count)
         main_index = choice(indexes)
-        
-        return self._building_question(group, keys, values, indexes, main_index, key_is_main)
+
+        return self._building_question(group, keys, values,
+                                       indexes, main_index, key_is_main)
