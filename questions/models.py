@@ -5,16 +5,18 @@ class QuestionValidationError(ValidationError):
     pass
 
 
+JSONAnswer = str | list[str]
+JSONQuestionGroup = dict[str, JSONAnswer]
+
 class JSONQGroups(BaseModel):
-    JSONAnswer = str | list[str]
-    JSONQuestionGroup = dict[str, JSONAnswer]
     data: dict[str, JSONQuestionGroup]
 
 
+Answer = tuple[str, bool]
+Question = str
+Group = str
+
 class StoredQuestionGroups(BaseModel):
-    Answer = tuple[str, bool]
-    Question = str
-    Group = str
     data: dict[str, dict[Question, list[Answer]]]
 
 
