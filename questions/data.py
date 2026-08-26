@@ -4,7 +4,7 @@ from random import randint, choice, shuffle, sample
 
 import orjson
 
-from .models import (ValidationError,
+from .models import (ValidationError, JSONWrongAnswers,
                      StoredQuestionGroups, JSONQGroups,
                      QuestionItem)
 
@@ -287,3 +287,79 @@ class QuestionsData:
 
         return self._building_question(group, keys, values,
                                        indexes, main_index, key_is_main)
+
+    def _flatten_answers(self, values: list) -> list[str]:
+        """Уникальный список всех правильных ответов группы (пул для дистракторов).
+        Строится один раз на группу — O(len(group))."""
+        seen: set[str] = set()
+        flat: list[str] = []
+        for value in values:
+            for answer in (value if isinstance(value, list) else (value,)):
+                if answer not in seen:
+                    seen.add(answer)
+                    flat.append(answer)
+        return flat
+
+    def _generate_wrong_answers(self, pool: list[str], pool_set: set[str],
+                                exclude: set[str], count: int) -> list[str]:
+        """Сэмплирует до `count` уникальных ответов из pool, не входящих в exclude"""
+        if count <= 0 or not pool:
+            return []
+
+        available = len(pool) - len(exclude & pool_set)
+        take = min(count, available)
+        if take <= 0:
+            return []
+
+        buffer_size = min(len(pool), take + len(exclude))
+        drawn = sample(pool, buffer_size)
+        wrong = [a for a in drawn if a not in exclude][:take]
+
+        if len(wrong) < take:
+            wrong = [a for a in pool if a not in exclude][:take]
+
+        return wrong
+
+    def to_stored(self, wrong_answers: JSONWrongAnswers | None = None,
+                  fill_missing: int = 3) -> StoredQuestionGroups:
+        if not isinstance(fill_missing, int) or fill_missing < 0:
+            logger.error("Ожидается fill_missing -> [int >= 0]")
+            fill_missing = 0
+
+        if wrong_answers is not None and not self._is_normal_data(wrong_answers):
+            logger.error("wrong_answers имеет некорректную структуру, игнорируется")
+            wrong_answers = None
+
+        stored: dict[str, dict[str, list[tuple[str, bool]]]] = {}
+
+        for group, items in self._data.items():
+            values = list(items.values())
+            pool = self._flatten_answers(values)
+            pool_set = set(pool)
+
+            group_wrong = wrong_answers.get(group, {}) if wrong_answers else {}
+            group_stored: dict[str, list[tuple[str, bool]]] = {}
+
+            for question, value in items.items():
+                right = set(value) if isinstance(value, list) else {value}
+
+                explicit = group_wrong.get(question)
+                if explicit is not None:
+                    wrong = list(dict.fromkeys(
+                        explicit if isinstance(explicit, list) else [explicit]))
+                    wrong = [a for a in wrong if a not in right]
+                else:
+                    wrong = []
+
+                if len(wrong) < fill_missing:
+                    exclude = right | set(wrong)
+                    wrong += self._generate_wrong_answers(
+                        pool, pool_set, exclude, fill_missing - len(wrong))
+
+                entries: list[tuple[str, bool]] = [(a, True) for a in right]
+                entries += [(a, False) for a in wrong]
+                group_stored[question] = entries
+
+            stored[group] = group_stored
+
+        return StoredQuestionGroups(data=stored)
