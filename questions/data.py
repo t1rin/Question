@@ -3,7 +3,7 @@ import json
 import os
 from random import randint, choice, shuffle
 
-from .models import (QuestionValidationError,
+from .models import (ValidationError,
                      StoredQuestionGroups, JSONQGroups,
                      QuestionItem)
 
@@ -40,7 +40,7 @@ class QuestionsData:
 
     def _is_normal_data(self, data: dict) -> bool:
         try: JSONQGroups(data=data)
-        except QuestionValidationError:
+        except ValidationError:
             return False
         return True
 
@@ -75,8 +75,7 @@ class QuestionsData:
         if len(dictionaries) == 1: return dictionaries[0]
         groups_names = set().union(*[set(d.keys()) for d in dictionaries])
         if len(groups_names) == sum([len(i) for i in dictionaries]):
-            return dict(((i[0], *i[1]) if isinstance(i[1], list) else (i[0], i[1]))
-                        for j in dictionaries for i in j.items())
+            return dict((i[0], i[1]) for j in dictionaries for i in j.items())
         new_dicts = {}
         for group_name in groups_names:
             values = []
