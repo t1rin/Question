@@ -1,23 +1,23 @@
+from typing import TypeAlias
+
 from pydantic import BaseModel, ValidationError
 
 
-class QuestionValidationError(ValidationError):
-    pass
 
+JSONAnswer: TypeAlias = str | list[str]
+JSONQuestionGroup: TypeAlias = dict[str, JSONAnswer]
 
-JSONAnswer = str | list[str]
-JSONQuestionGroup = dict[str, JSONAnswer]
+StoredAnswer: TypeAlias = tuple[str, bool]
+StoredQuestion: TypeAlias = str
+StoredGroup: TypeAlias = str
+
 
 class JSONQGroups(BaseModel):
     data: dict[str, JSONQuestionGroup]
 
 
-Answer = tuple[str, bool]
-Question = str
-Group = str
-
 class StoredQuestionGroups(BaseModel):
-    data: dict[str, dict[Question, list[Answer]]]
+    data: dict[str, dict[StoredQuestion, list[StoredAnswer]]]
 
 
 class QuestionItem(BaseModel):
