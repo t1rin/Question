@@ -17,5 +17,5 @@ qd.add_question("Столицы", "Германия", "Берлин")
 
 show("Авто", qd.to_stored(fill_missing=2))
 
-wrong = {"Столицы": {"Франция": "Лондон"}}
+wrong: JSONWrongAnswers = {"Столицы": {"Франция": "Лондон"}}
 show("Ручные + автодобивка", qd.to_stored(wrong_answers=wrong, fill_missing=2))
