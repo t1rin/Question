@@ -5,8 +5,8 @@ from random import randint, choice, shuffle, sample
 import orjson
 
 from .models import (ValidationError, JSONWrongAnswers,
-                     StoredQuestionGroups, JSONQGroups,
-                     QuestionItem)
+                     StoredQGroupsModel, JSONQGroupsModel,
+                     QItemModel)
 
 
 logger = logging.getLogger(__name__)
@@ -24,7 +24,7 @@ class QuestionsData:
             self._read_json()
 
     def _init_groups(self, data: dict) -> None:
-        self._groups = JSONQGroups(data=data)
+        self._groups = JSONQGroupsModel(data=data)
         self._data = self._groups.data
         self._invalidate_cache()
 
@@ -42,7 +42,7 @@ class QuestionsData:
         return self._is_normal_data(data)
 
     def _is_normal_data(self, data: dict) -> bool:
-        try: JSONQGroups(data=data)
+        try: JSONQGroupsModel(data=data)
         except ValidationError:
             return False
         return True
@@ -192,7 +192,7 @@ class QuestionsData:
 
     def _building_question(self, group, keys,
                            values, indexes, main_index,
-                           key_is_main) -> QuestionItem:
+                           key_is_main) -> QItemModel:
         all_answers = []
         right_answers = set()
         if key_is_main:
@@ -210,7 +210,7 @@ class QuestionsData:
                 if idx == main_index:
                     right_answers.add(answer)
 
-        return QuestionItem(group=group, title=title,
+        return QItemModel(group=group, title=title,
                             right_answers=list(right_answers),
                             all_answers=all_answers)
 
@@ -225,7 +225,7 @@ class QuestionsData:
         return sample(available, count)
 
     def get_question(self, group: str, title: str, 
-                     key_is_main: bool = True, quentity_items: int = 3) -> QuestionItem | None:
+                     key_is_main: bool = True, quentity_items: int = 3) -> QItemModel | None:
         if not isinstance(quentity_items, int) or quentity_items < 2:
             logger.error("Некорректное количество вариантов ответа")
             return None
@@ -265,7 +265,7 @@ class QuestionsData:
         return self._building_question(group, keys, values, indexes, main_index, key_is_main)
 
     def get_rand_question(self, group=None, key_is_main=True,
-                          quantity_option=3) -> QuestionItem | None:
+                          quantity_option=3) -> QItemModel | None:
         if self._data is None or len(self._data) == 0:
             logger.warning("Вопросов нет")
             return None
@@ -321,7 +321,7 @@ class QuestionsData:
         return wrong
 
     def to_stored(self, wrong_answers: JSONWrongAnswers | None = None,
-                  fill_missing: int = 3) -> StoredQuestionGroups:
+                  fill_missing: int = 3) -> StoredQGroupsModel:
         if not isinstance(fill_missing, int) or fill_missing < 0:
             logger.error("Ожидается fill_missing -> [int >= 0]")
             fill_missing = 0
@@ -362,4 +362,4 @@ class QuestionsData:
 
             stored[group] = group_stored
 
-        return StoredQuestionGroups(data=stored)
+        return StoredQGroupsModel(data=stored)
