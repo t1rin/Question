@@ -130,13 +130,13 @@ stored = data.to_stored(
 </details>
 </p>
 
-### класс QuestionItem
+### класс QItem
 
 \- отвечает за отдельно взятый вопрос
 
 ```python
 # Инициализация:
-question = QuestionItem()
+question = QItem()
 
 # или
 
