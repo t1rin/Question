@@ -1,5 +1,5 @@
 from questions import QuestionsData
-from quesitons.types import JSONWrongAnswers
+from questions.types import JSONWrongAnswers
 
 
 def show(title: str, stored) -> None:
