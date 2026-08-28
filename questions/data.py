@@ -12,7 +12,7 @@ from .models import (ValidationError, JSONWrongAnswers,
 logger = logging.getLogger(__name__)
 
 
-class QuestionsData:
+class QuestionBank:
     def __init__(self, path_to_json: str | None = None) -> None:
         self._json_name: str | None = path_to_json
         self._json_cache: bytes | None = None
@@ -112,7 +112,7 @@ class QuestionsData:
                 new_dicts[group_name] = self._merge(*values)
         return new_dicts
 
-    def add_question(self, group: str, key: str, value: str) -> 'QuestionsData':
+    def add_question(self, group: str, key: str, value: str) -> 'QuestionBank':
         if self._json_name and not self._is_normal_json():
             self._create_json()
         if any(not isinstance(name, str) for name in [group, key, value]):
@@ -136,7 +136,7 @@ class QuestionsData:
 
         return self
 
-    def load_data(self, data: dict) -> 'QuestionsData':
+    def load_data(self, data: dict) -> 'QuestionBank':
         if self._is_normal_data(data):
             new_data = self._merge(self._data, data)
             self._init_groups(data=new_data)

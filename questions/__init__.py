@@ -1,7 +1,7 @@
 __author__ = "T1rin"
 
-from questions.data import QuestionsData
+from questions.data import QuestionBank
 from questions.models import QItemModel
 
 
-__all__ = ["QuestionsData", "QItemModel"]
+__all__ = ["QuestionBank", "QItemModel"]

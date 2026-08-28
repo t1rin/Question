@@ -1,4 +1,4 @@
-from questions import QuestionsData
+from questions import QuestionBank
 from questions.types import JSONWrongAnswers
 
 
@@ -11,7 +11,7 @@ def show(title: str, stored) -> None:
             print(f"{group} | {q}: верно={right}, неверно={wrong}")
 
 
-qd = QuestionsData()
+qd = QuestionBank()
 qd.add_question("Столицы", "Франция", "Париж")
 qd.add_question("Столицы", "Япония", "Токио")
 qd.add_question("Столицы", "Германия", "Берлин")

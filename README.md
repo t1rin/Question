@@ -15,19 +15,19 @@
 
 ## Модуль `questions`
 
-### класс QuestionsData
+### класс QuestionBank
 
 \- отвечает за хранение данных о всех вопросах
 
 ```python
 # Инициализация:
-data = QuestionsData(path_to_json="my_json.json")
+data = QuestionBank(path_to_json="my_json.json")
 ```
 
 загрузка данных из файла `my_json.json`. Если `path_to_json` не указан, то работа с json файлом произоводится не будет
 
 <details>
-<summary>методы класса <u>QuestionsData</u></summary>
+<summary>методы класса <u>QuestionBank</u></summary>
 <p>
 
 #### — метод `load_data`
@@ -35,7 +35,7 @@ data = QuestionsData(path_to_json="my_json.json")
 позволяет загрузить новые данные из словаря
 
 ```python
-data = QuestionsData()
+data = QuestionBank()
 
 data_dict = {"Набор4": {"Вопрос1": "Ответ1", "Вопрос2": "Ответ2"}}
 data.load_data(data_dict)
@@ -46,7 +46,7 @@ data.load_data(data_dict)
 позволяет добавлять вопросы (поддерживается только по отному вопросу и ответу за раз)
 
 ```python
-data = QuestionsData()
+data = QuestionBank()
 data.add_question(
   group="Набор4",
   key="Вопрос1",
@@ -59,7 +59,7 @@ data.add_question(
 позволяет получить список всех групп
 
 ```python
-data = QuestionsData()
+data = QuestionBank()
 groups = data.get_groups()
 ```
 
@@ -68,7 +68,7 @@ groups = data.get_groups()
 позволяет получить элементы группы
 
 ```python
-data = QuestionsData()
+data = QuestionBank()
 items = data.get_items(group="Набор1")
 ```
 
@@ -79,7 +79,7 @@ items = data.get_items(group="Набор1")
 позволяет получить все данные
 
 ```python
-data = QuestionsData()
+data = QuestionBank()
 all_data = data.get_all_data()
 ```
 
@@ -89,7 +89,7 @@ all_data = data.get_all_data()
 позволяет получить вопрос из файла json
 
 ```python
-data = QuestionsData()
+data = QuestionBank()
 question = data.get_guestion(
   group="Набор1",
   title="Вопрос1",
@@ -104,7 +104,7 @@ question = data.get_guestion(
 позволяет получить случайный вопрос из файла json
 
 ```python
-data = QuestionsData()
+data = QuestionBank()
 question = data.get_rand_question(
   group="Набор1",
   quentity_items=5
@@ -118,7 +118,7 @@ question = data.get_rand_question(
 позволяет получить данные в формате `StoredQuestionGroups`
 
 ```python
-data = QuestionsData()
+data = QuestionBank()
 stored = data.to_stored(
   wrong_answers={"Набор1": {"Вопрос1": ["Ответ2", "Ответ3"]}},
   fill_missing=3
@@ -140,12 +140,12 @@ question = QuestionItem()
 
 # или
 
-data = QuestionsData(path_to_json="my_json.json")
+data = QuestionBank(path_to_json="my_json.json")
 question = data.data.get_question(...)
 
 # или
 
-data = QuestionsData(path_to_json="my_json.json")
+data = QuestionBank(path_to_json="my_json.json")
 question = data.data.get_rand_question(...)
 ```
 

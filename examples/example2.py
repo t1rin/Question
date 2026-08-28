@@ -28,7 +28,7 @@ class App:
         self._q_warning = 2           # количество миганий в warning
 
         # инизиализация Модуля + загрузка данных
-        self._data = QuestionsData("data.example.json")
+        self._data = QuestionBank("data.example.json")
 
         if self._data is None:
             self.active_loop = False

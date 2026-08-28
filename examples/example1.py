@@ -51,4 +51,4 @@ def main_loop(data):
 
 
 if __name__ == "__main__":
-    main_loop(QuestionsData("data.example.json"))
+    main_loop(QuestionBank("data.example.json"))
