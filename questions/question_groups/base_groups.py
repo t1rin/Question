@@ -1,15 +1,23 @@
 import os
 import logging
 from abc import ABC, abstractmethod
-from typing import Generic, TypeVar
+from typing import (Generic, TypeVar,
+                    Protocol, runtime_checkable)
 
 import orjson
 
-from .models import ValidationError
+from ..models import ValidationError
 
 
 logger = logging.getLogger(__name__)
-ModelT = TypeVar('ModelT')
+
+
+@runtime_checkable
+class ModelProtocol(Protocol):
+    data: dict
+    def __init__(self, data: dict) -> None: ...
+
+ModelT = TypeVar('ModelT', bound=ModelProtocol)
 
 
 class BaseQGroups(ABC, Generic[ModelT]):
@@ -103,7 +111,6 @@ class BaseQGroups(ABC, Generic[ModelT]):
                 self._update_json()
         else:
             logger.error("json данные не имеют смысла")
-        return self
 
     def get_all_data_bytes(self) -> bytes:
         """Получить все данные в виде сериализованного JSON (с кэшированием)"""
