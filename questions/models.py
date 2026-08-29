@@ -11,7 +11,7 @@ class StoredQGroupsModel(BaseModel):
     data: dict[str, dict[StoredQuestion, list[StoredAnswer]]]
 
 
-class QItemModel(BaseModel):
+class QItem(BaseModel):
     group: str | None = None
     title: str | None = None
     right_answers: list[str] = []

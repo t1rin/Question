@@ -6,7 +6,7 @@ import orjson
 
 from .models import (ValidationError, JSONWrongAnswers,
                      StoredQGroupsModel, JSONQGroupsModel,
-                     QItemModel)
+                     QItem)
 
 
 logger = logging.getLogger(__name__)
@@ -192,7 +192,7 @@ class QuestionBank:
 
     def _building_question(self, group, keys,
                            values, indexes, main_index,
-                           key_is_main) -> QItemModel:
+                           key_is_main) -> QItem:
         all_answers = []
         right_answers = set()
         if key_is_main:
@@ -210,7 +210,7 @@ class QuestionBank:
                 if idx == main_index:
                     right_answers.add(answer)
 
-        return QItemModel(group=group, title=title,
+        return QItem(group=group, title=title,
                             right_answers=list(right_answers),
                             all_answers=all_answers)
 
@@ -225,7 +225,7 @@ class QuestionBank:
         return sample(available, count)
 
     def get_question(self, group: str, title: str, 
-                     key_is_main: bool = True, quentity_items: int = 3) -> QItemModel | None:
+                     key_is_main: bool = True, quentity_items: int = 3) -> QItem | None:
         if not isinstance(quentity_items, int) or quentity_items < 2:
             logger.error("Некорректное количество вариантов ответа")
             return None
@@ -265,7 +265,7 @@ class QuestionBank:
         return self._building_question(group, keys, values, indexes, main_index, key_is_main)
 
     def get_rand_question(self, group=None, key_is_main=True,
-                          quantity_option=3) -> QItemModel | None:
+                          quantity_option=3) -> QItem | None:
         if self._data is None or len(self._data) == 0:
             logger.warning("Вопросов нет")
             return None
