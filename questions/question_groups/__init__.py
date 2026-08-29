@@ -1,3 +1,4 @@
+# type: ignore
 from .simple_groups import SimpleQGroups
 from .stored_groups import StoredQGroups
 
