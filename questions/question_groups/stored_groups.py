@@ -151,10 +151,10 @@ class StoredQGroups(BaseQGroups[StoredQGroupsModel]):
 
 
     def get_rand_question(self,
-                      group: str | None = None,
-                      reverse: bool = False,
-                      quantity_ans: int = 3,
-                      ) -> QItem | None:
+                          group: str | None = None,
+                          reverse: bool = False,
+                          quantity_ans: int = 3,
+                          ) -> QItem | None:
         if not self.data:
             logger.warning("Вопросов нет")
             return None
