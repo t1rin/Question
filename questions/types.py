@@ -1,10 +1,17 @@
 from typing import TypeAlias
+from enum import IntEnum
+
+    
+class StoredMode(IntEnum):
+    QUESTION = 0
+    ANSWER = 1
 
 
-JSONAnswer: TypeAlias = str | list[str]
-JSONQuestionGroup: TypeAlias = dict[str, JSONAnswer]
-JSONWrongAnswers: TypeAlias = dict[str, JSONQuestionGroup]
+SimpleAnswer: TypeAlias = str | list[str]
+SimpleQuestionGroup: TypeAlias = dict[str, SimpleAnswer]
+SimpleWrongAnswers: TypeAlias = dict[str, SimpleQuestionGroup]
 
 StoredAnswer: TypeAlias = tuple[str, bool]
-StoredQuestion: TypeAlias = str
-StoredGroup: TypeAlias = str
+StoredQuestions: TypeAlias = dict[str, list[StoredAnswer]]
+StoredGroups: TypeAlias = dict[str, dict[StoredMode, StoredQuestions]]
+

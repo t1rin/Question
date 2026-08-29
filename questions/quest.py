@@ -1,12 +1,12 @@
 import logging
 import os
-from random import randint, choice, shuffle, sample
+from random import choice, shuffle, sample
 
 import orjson
 
-from .models import (ValidationError, JSONWrongAnswers,
-                     StoredQGroupsModel, JSONQGroupsModel,
-                     QItem)
+from .types import SimpleWrongAnswers
+from .models import (ValidationError, StoredQGroupsModel,
+                     SimpleQGroupsModel, QItem)
 
 
 logger = logging.getLogger(__name__)
@@ -24,7 +24,7 @@ class QuestionBank:
             self._read_json()
 
     def _init_groups(self, data: dict) -> None:
-        self._groups = JSONQGroupsModel(data=data)
+        self._groups = SimpleQGroupsModel(data=data)
         self._data = self._groups.data
         self._invalidate_cache()
 
@@ -42,7 +42,7 @@ class QuestionBank:
         return self._is_normal_data(data)
 
     def _is_normal_data(self, data: dict) -> bool:
-        try: JSONQGroupsModel(data=data)
+        try: SimpleQGroupsModel(data=data)
         except ValidationError:
             return False
         return True
@@ -320,7 +320,7 @@ class QuestionBank:
 
         return wrong
 
-    def to_stored(self, wrong_answers: JSONWrongAnswers | None = None,
+    def to_stored(self, wrong_answers: SimpleWrongAnswers | None = None,
                   fill_missing: int = 3) -> StoredQGroupsModel:
         if not isinstance(fill_missing, int) or fill_missing < 0:
             logger.error("Ожидается fill_missing -> [int >= 0]")

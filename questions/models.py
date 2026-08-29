@@ -3,12 +3,12 @@ from pydantic import BaseModel, ValidationError
 from .types import *
 
 
-class JSONQGroupsModel(BaseModel):
-    data: dict[str, JSONQuestionGroup]
+class SimpleQGroupsModel(BaseModel):
+    data: dict[str, SimpleQuestionGroup]
 
 
 class StoredQGroupsModel(BaseModel):
-    data: dict[str, dict[StoredQuestion, list[StoredAnswer]]]
+    data: StoredGroups
 
 
 class QItem(BaseModel):

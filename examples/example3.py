@@ -1,5 +1,5 @@
 from questions import QuestionBank
-from questions.types import JSONWrongAnswers
+from questions.types import SimpleWrongAnswers
 
 
 def show(title: str, stored) -> None:
@@ -18,5 +18,5 @@ qd.add_question("Столицы", "Германия", "Берлин")
 
 show("Авто", qd.to_stored(fill_missing=2))
 
-wrong: JSONWrongAnswers = {"Столицы": {"Франция": "Лондон"}}
+wrong: SimpleWrongAnswers = {"Столицы": {"Франция": "Лондон"}}
 show("Ручные + автодобивка", qd.to_stored(wrong_answers=wrong, fill_missing=2))
