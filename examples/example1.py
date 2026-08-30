@@ -52,4 +52,4 @@ def main_loop(data):
 
 
 if __name__ == "__main__":
-    main_loop(QuestionBank(path_to_simple="data.example.json"))
+    main_loop(QuestionBank(path_to_simple="simple.example.json"))
