@@ -4,153 +4,128 @@
   <img src="src/2.png">
 </div>
 
+Модуль `questions` для создания и хранения наборов вопросов с ответами, объединённых в группы. Поддерживает два формата данных:
 
-Пару скриптов для создания тестов с вопросами и ответами
+- **simple** — упрощённый: `{"Группа": {"Вопрос": "Ответ"}}` (или список ответов), удобен для ручного заполнения json;
+- **stored** — полный: каждый ответ помечен как правильный/неправильный, поддерживается обратный режим (вопрос и ответ меняются местами) и автогенерация недостающих неправильных вариантов.
 
 # Использование
 
-В файле `data.json` хранятся вопросы и ответы, расформированные по группам (ответов может быть несколько). С помощью модуля `questions` можно создавать целые опросники всего в несколько десятков строк кода в `main.py`
-
-> Пример этого приведен в `/examples`
-
-## Модуль `questions`
-
-### класс QuestionBank
-
-\- отвечает за хранение данных о всех вопросах
+## `QuestionBank`
 
 ```python
-# Инициализация:
-data = QuestionBank(path_to_json="my_json.json")
+from questions import QuestionBank
+
+bank = QuestionBank(
+    path_to_simple="simple.json",
+    path_to_stored="stored.json",
+)
 ```
 
-загрузка данных из файла `my_json.json`. Если `path_to_json` не указан, то работа с json файлом произоводится не будет
+- `path_to_simple` — путь к json файлу в simple-формате;
+- `path_to_stored` — путь к json файлу в stored-формате.
+
+Оба параметра необязательны. Если указан `path_to_simple`, данные при инициализации автоматически конвертируются и сохраняются в stored-хранилище.
 
 <details>
 <summary>методы класса <u>QuestionBank</u></summary>
 <p>
 
-#### — метод `load_data`
+#### — метод `load_simple_json`
 
-позволяет загрузить новые данные из словаря
+загружает json файл simple-формата
 
 ```python
-data = QuestionBank()
+bank.load_simple_json("simple.json")
+```
 
-data_dict = {"Набор4": {"Вопрос1": "Ответ1", "Вопрос2": "Ответ2"}}
-data.load_data(data_dict)
+#### — метод `load_simple_data`
+
+загружает новые данные из словаря simple-формата (объединяются с уже имеющимися)
+
+```python
+bank.load_simple_data({
+    "Набор4": {"Вопрос1": "Ответ1", "Вопрос2": ["Ответ2", "Ответ2.1"]}
+})
 ```
 
 #### — метод `add_question`
 
-позволяет добавлять вопросы (поддерживается только по отному вопросу и ответу за раз)
+добавляет один вопрос напрямую в stored-хранилище с явным указанием правильных и неправильных ответов
 
 ```python
-data = QuestionBank()
-data.add_question(
-  group="Набор4",
-  key="Вопрос1",
-  value="Ответ1"
+bank.add_question(
+    group="Набор1",
+    title="Вопрос1",
+    right_answers=["Ответ1"],
+    wrong_answers=["Ответ2", "Ответ3"],
 )
 ```
 
 #### — метод `get_groups`
 
-позволяет получить список всех групп
+возвращает список всех групп
 
 ```python
-data = QuestionBank()
-groups = data.get_groups()
+groups = bank.get_groups()
 ```
-
-#### — метод `get_items`
-
-позволяет получить элементы группы
-
-```python
-data = QuestionBank()
-items = data.get_items(group="Набор1")
-```
-
-получим элементы группы `Набор1`
-
-#### — метод `get_all_data`
-
-позволяет получить все данные
-
-```python
-data = QuestionBank()
-all_data = data.get_all_data()
-```
-
 
 #### — метод `get_question`
 
-позволяет получить вопрос из файла json
+возвращает конкретный вопрос группы
 
 ```python
-data = QuestionBank()
-question = data.get_guestion(
-  group="Набор1",
-  title="Вопрос1",
-  quentity_items=5
+question = bank.get_question(
+    group="Набор1",
+    title="Вопрос1",
+    quantity_ans=5,
 )
 ```
 
-получим вопрос `Вопрос1` из группы `Набор1` с количеством вариантов ответа равным пяти
+вернёт `QItem` для вопроса `"Вопрос1"` из группы `"Набор1"` с пятью вариантами ответа
 
 #### — метод `get_rand_question`
 
-позволяет получить случайный вопрос из файла json
+возвращает случайный вопрос
 
 ```python
-data = QuestionBank()
-question = data.get_rand_question(
-  group="Набор1",
-  quentity_items=5
+question = bank.get_rand_question(
+    group="Набор1",
+    quantity_ans=5,
 )
 ```
 
-получим случайный вопрос из группы `"Набор1"` с количеством вариантов ответа равным пяти (если `group` не задан, вопрос будет выбран из случайной группы)
+если `group` не задан — вопрос выбирается из случайной группы
 
-#### — метод `to_stored`
+#### — метод `get_qitems`
 
-позволяет получить данные в формате `StoredQuestionGroups`
+возвращает все вопросы группы
 
 ```python
-data = QuestionBank()
-stored = data.to_stored(
-  wrong_answers={"Набор1": {"Вопрос1": ["Ответ2", "Ответ3"]}},
-  fill_missing=3
-)
+items = bank.get_qitems(group="Набор1")
 ```
 
-получим `StoredQuestionGroups`, где для каждого вопроса собраны правильные и неправильные ответы; `wrong_answers` задаёт неправильные ответы вручную (необязательно), `fill_missing` — минимальное количество неправильных ответов на вопрос (недостающие подбираются автоматически)
+#### — метод `get_all_data_str` / `get_all_data_bytes`
 
-</details>
+возвращает все данные stored-хранилища сериализованными в JSON (строкой или байтами)
+
+```python
+raw = bank.get_all_data_str()
+```
+
 </p>
+</details>
 
-### класс QItem
+## `QItem`
 
-\- отвечает за отдельно взятый вопрос
+отдельно взятый вопрос с вариантами ответов; создаётся не напрямую, а через `get_question` / `get_rand_question` / `get_qitems`
 
 ```python
-# Инициализация:
-question = QItem()
-
-# или
-
-data = QuestionBank(path_to_json="my_json.json")
-question = data.data.get_question(...)
-
-# или
-
-data = QuestionBank(path_to_json="my_json.json")
-question = data.data.get_rand_question(...)
+question = bank.get_rand_question(group="Набор1")
 ```
 
 <details>
-<summary>свойства и методы <u>Question</u></summary>
+<summary>свойства и методы <u>QItem</u></summary>
 <p>
 
 #### — свойство `title`
@@ -169,14 +144,6 @@ question.title
 question.group
 ```
 
-#### — свойство `answers`
-
-список всех ответов к вопросу
-
-```python
-question.answers
-```
-
 #### — свойство `right_answers`
 
 список правильных ответов к вопросу
@@ -185,17 +152,33 @@ question.answers
 question.right_answers
 ```
 
+#### — свойство `wrong_answers`
+
+список неправильных ответов к вопросу
+
+```python
+question.wrong_answers
+```
+
+#### — свойство `all_answers`
+
+все ответы к вопросу (правильные + неправильные)
+
+```python
+question.all_answers
+```
+
 #### — метод `is_right`
 
-позволяет проверить правильность выбранного ответа (`answer`)
+проверяет правильность выбранного ответа
 
 ```python
 question.is_right(answer)
 ```
 
-</details>
 </p>
+</details>
 
-# Примеры:
+# Примеры
 
 примеры в `/examples`
