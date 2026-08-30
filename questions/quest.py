@@ -1,4 +1,5 @@
 import logging
+from typing import Callable
 
 from .question_groups import *
 from .models import QItem, StoredQGroupsModel
@@ -8,26 +9,43 @@ logger = logging.getLogger(__name__)
 
 
 class QuestionBank:
+    """Класс управления группами вопросов."""
+
+    default_fill_missing = 10
+
     def __init__(self, path_to_simple: str | None = None,
                  path_to_stored: str | None = None) -> None:
         self._stored_groups = StoredQGroups(path_to_stored)
         self._simple_groups = SimpleQGroups(path_to_simple)
 
-    def add_question(self, *args, **kwargs) -> None:
-        self._stored_groups.add_question(*args, **kwargs)
+        if path_to_simple:
+            self._synchronize()
 
-    def get_groups(self) -> list[str]:
-        return self._stored_groups.get_groups()
+        self._need_synchronization = False
 
-    def get_qitems(self, *args, **kwargs) -> list[QItem] | None:
-        return self._stored_groups.get_qitems(*args, **kwargs)
+    def _synchronize(self) -> None:
+        """Функция синхронизации SimpleQGroups с StoredQGroups"""
+        _stored = self._simple_groups.to_stored(
+            fill_missing=self.default_fill_missing)
+        self._stored_groups.load_data(_stored.data)
 
-    def get_question(self, *args, **kwargs) -> QItem | None:
-        return self._stored_groups.get_question(*args, **kwargs)
+    def __getattr__(self, name: str):
+        stored_attr = getattr(self._stored_groups, name)
+ 
+        if callable(stored_attr):
+            def wrapper(*args, **kwargs):
+                if self._need_synchronization:
+                    self._synchronize()
+                return stored_attr(*args, **kwargs)
+            return wrapper
+ 
+        return stored_attr
 
-    def get_rand_question(self, *args, **kwargs) -> QItem | None:
-        return self._stored_groups.get_rand_question(*args, **kwargs)
+    def load_simple_json(self, path_to_json: str) -> None:
+        self._simple_groups.load_json(path_to_json)
+        self._need_synchronization = True
 
-    def to_stored(self, *args, **kwargs) -> StoredQGroupsModel:
-        return self._simple_groups.to_stored(*args, **kwargs)
+    def load_simple_data(self, data: dict) -> None:
+        self._simple_groups.load_data(data)
+        self._need_synchronization = True
 
