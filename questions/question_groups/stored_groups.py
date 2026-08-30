@@ -15,7 +15,7 @@ class StoredQGroups(BaseQGroups[StoredQGroupsModel]):
 
     ModelClass = StoredQGroupsModel
 
-    def _merge(self, *datas: dict) -> dict: # TODO: resolve conflicts
+    def _merge(self, *datas: dict) -> dict:
         """Функция объединения данных."""
         result: StoredGroups = {}
 
@@ -33,8 +33,22 @@ class StoredQGroups(BaseQGroups[StoredQGroupsModel]):
                     for title, answers in group_data[mode].items():
                         if title not in result[group_name][mode]:
                             result[group_name][mode][title] = []
-                        result[group_name][mode][title] = list(
-                            set([*result[group_name][mode][title], *answers]))
+                        result[group_name][mode][title].extend(answers)
+                    
+                        seen_texts = set()
+                        unique_answers = []
+                        for answer in result[group_name][mode][title]:
+                            answer_text = answer[0]
+                            if answer_text not in seen_texts:
+                                seen_texts.add(answer_text)
+                                unique_answers.append(answer)
+                            else:
+                                logging.warning(
+                                    "Дубликат ответа '%s' в '%s' группы '%s'",
+                                    answer_text, title, group_name
+                                )
+                    
+                        result[group_name][mode][title] = unique_answers
         return result
 
     def add_question(self, group: str, title: str,
