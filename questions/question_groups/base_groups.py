@@ -1,4 +1,3 @@
-import os
 import logging
 from pathlib import Path
 from abc import ABC, abstractmethod
@@ -26,8 +25,9 @@ class BaseQGroups(ABC, Generic[ModelT]):
 
     ModelClass: type[ModelT]
     
-    def __init__(self, path_to_json: str | None = None) -> None:
+    def __init__(self, path_to_json: str | Path | None = None) -> None:
         self._json_cache: bytes | None = None
+        self._path: Path | None = None
 
         self._init_groups()
         self.load_json(path_to_json)
@@ -48,48 +48,44 @@ class BaseQGroups(ABC, Generic[ModelT]):
 
     def _is_normal_json(self) -> bool:
         assert self._path is not None
-        if not os.path.exists(self._path):
-            logger.error(
-                "Переданного (%s) пути не существует", self._path)
+        if not self._path.exists():
+            logger.error("Переданного (%s) пути не существует", self._path)
             return False
         try:
-            with open(self._path, "rb") as json_file:
-                data = orjson.loads(json_file.read())
+            data = orjson.loads(self._path.read_bytes())
         except Exception as err:
-            logger.error(f"Некорректная структура json файла: %s", err)
+            logger.error("Некорректная структура json файла: %s", err)
             return False
         return self._is_normal_data(data)
 
     def _create_json(self) -> None:
         assert self._path is not None
-        file_path = Path(self._path)
-    
-        if file_path.exists():
+        if self._path.exists():
             index = 1
             while True:
-                backup_path = file_path.parent / f"{file_path.stem}_{index}{file_path.suffix}"
+                backup_path = self._path.parent / f"{self._path.stem}_{index}{self._path.suffix}"
                 if not backup_path.exists():
-                    file_path.rename(backup_path)
-                    logger.info("Создан новый " + self._path)
+                    self._path.rename(backup_path)
+                    logger.info("Создан новый %s", self._path)
                     break
                 index += 1
     
-        file_path.write_bytes(orjson.dumps({}, option=orjson.OPT_INDENT_2 | orjson.OPT_SORT_KEYS | orjson.OPT_NON_STR_KEYS))
-        logger.info("Создан новый " + self._path)
+        self._path.parent.mkdir(parents=True, exist_ok=True)
+        
+        self._path.write_bytes(self._orjson_bytes({}))
+        logger.info("Создан новый %s", self._path)
 
     def _read_json(self) -> None:
         assert self._path is not None
-        with open(self._path, "rb") as json_file:
-            data = orjson.loads(json_file.read())
-            self._init_groups(data=data)
+        data = orjson.loads(self._path.read_bytes())
+        self._init_groups(data=data)
 
     def _update_json(self) -> None:
         assert self._path is not None
-        with open(self._path, "wb") as json_file:
-            data = orjson.dumps(
-                self._data, 
-                option=orjson.OPT_INDENT_2 | orjson.OPT_SORT_KEYS | orjson.OPT_NON_STR_KEYS)
-            json_file.write(data)
+        self._path.parent.mkdir(parents=True, exist_ok=True)
+        
+        data = self._orjson_bytes(self._data)
+        self._path.write_bytes(data)
         self._invalidate_cache()
 
     def _invalidate_cache(self) -> None:
@@ -100,10 +96,17 @@ class BaseQGroups(ABC, Generic[ModelT]):
         """Функция объединения данных"""
         pass
 
-    def load_json(self, path_to_json: str | None) -> None:
+    def _orjson_bytes(self, data: dict) -> bytes:
+        return orjson.dumps(
+            data, option=orjson.OPT_INDENT_2 | 
+                         orjson.OPT_SORT_KEYS | 
+                         orjson.OPT_NON_STR_KEYS)
+
+    def load_json(self, path_to_json: str | Path | None) -> None:
         """Функция подключения JSON файла"""
-        self._path = path_to_json
-        if path_to_json is not None:
+        self._path = Path(path_to_json) if path_to_json is not None else None
+        
+        if self._path is not None:
             if not self._is_normal_json():
                 self._create_json()
             self._read_json()
@@ -123,9 +126,7 @@ class BaseQGroups(ABC, Generic[ModelT]):
         if self._json_cache is not None:
             return self._json_cache
         
-        self._json_cache = orjson.dumps(
-            self._data,
-            option=orjson.OPT_INDENT_2 | orjson.OPT_SORT_KEYS | orjson.OPT_NON_STR_KEYS)
+        self._json_cache = self._orjson_bytes(self._data)
         return self._json_cache
 
     def get_all_data_str(self) -> str:
@@ -135,3 +136,8 @@ class BaseQGroups(ABC, Generic[ModelT]):
     @property
     def data(self) -> dict:
         return self._data
+    
+    @property
+    def path(self) -> Path | None:
+        """Доступ к пути файла"""
+        return self._path
