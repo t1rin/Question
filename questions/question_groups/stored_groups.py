@@ -34,7 +34,7 @@ class StoredQGroups(BaseQGroups[StoredQGroupsModel]):
                         if title not in result[group_name][mode]:
                             result[group_name][mode][title] = []
                         result[group_name][mode][title].extend(answers)
-                    
+                        
                         seen_texts = set()
                         unique_answers = []
                         for answer in result[group_name][mode][title]:
@@ -49,6 +49,8 @@ class StoredQGroups(BaseQGroups[StoredQGroupsModel]):
                                 )
                     
                         result[group_name][mode][title] = unique_answers
+                        # result[group_name][mode][title] = list(
+                        #     set([*result[group_name][mode][title], *answers]))
         return result
 
     def add_question(self, group: str, title: str,

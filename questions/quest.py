@@ -34,6 +34,7 @@ class QuestionBank:
             def wrapper(*args, **kwargs):
                 if self._need_synchronization:
                     self._synchronize()
+                    self._need_synchronization = False
                 return stored_attr(*args, **kwargs)
             return wrapper
  

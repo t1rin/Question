@@ -32,6 +32,12 @@ class BaseQGroups(ABC, Generic[ModelT]):
         self._init_groups()
         self.load_json(path_to_json)
 
+    def _init_groups(self, data: dict | None = None) -> None:
+        """Функция объединения данных."""
+        self._groups = self.ModelClass(data=(data or {}))
+        self._data = self._groups.data
+        self._invalidate_cache()
+
     def _is_normal_data(self, data: dict) -> bool:
         try: self.ModelClass(data=data)
         except ValidationError as e:
@@ -68,7 +74,7 @@ class BaseQGroups(ABC, Generic[ModelT]):
                     break
                 index += 1
     
-        file_path.write_bytes(orjson.dumps({}, option=orjson.OPT_INDENT_2))
+        file_path.write_bytes(orjson.dumps({}, option=orjson.OPT_INDENT_2 | orjson.OPT_SORT_KEYS | orjson.OPT_NON_STR_KEYS))
         logger.info("Создан новый " + self._path)
 
     def _read_json(self) -> None:
@@ -82,18 +88,12 @@ class BaseQGroups(ABC, Generic[ModelT]):
         with open(self._path, "wb") as json_file:
             data = orjson.dumps(
                 self._data, 
-                option=orjson.OPT_INDENT_2 | orjson.OPT_SORT_KEYS)
+                option=orjson.OPT_INDENT_2 | orjson.OPT_SORT_KEYS | orjson.OPT_NON_STR_KEYS)
             json_file.write(data)
         self._invalidate_cache()
 
     def _invalidate_cache(self) -> None:
         self._json_cache = None
-
-    def _init_groups(self, data: dict | None = None) -> None:
-        """Функция объединения данных."""
-        self._groups = self.ModelClass(data=(data or {}))
-        self._data = self._groups.data
-        self._invalidate_cache()
 
     @abstractmethod
     def _merge(self, *datas: dict) -> dict:
@@ -125,7 +125,7 @@ class BaseQGroups(ABC, Generic[ModelT]):
         
         self._json_cache = orjson.dumps(
             self._data,
-            option=orjson.OPT_INDENT_2 | orjson.OPT_SORT_KEYS)
+            option=orjson.OPT_INDENT_2 | orjson.OPT_SORT_KEYS | orjson.OPT_NON_STR_KEYS)
         return self._json_cache
 
     def get_all_data_str(self) -> str:
