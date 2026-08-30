@@ -80,6 +80,58 @@ class SimpleQGroups(BaseQGroups[SimpleQGroupsModel]):
 
         return wrong
 
+    def _build_group(self, items: dict, group_wrong: dict,
+                     fill_missing: int) -> dict[str, list[tuple[str, bool]]]:
+        values = list(items.values())
+        pool = self._flatten_answers(values)
+        pool_set = set(pool)
+
+        group_stored: dict[str, list[tuple[str, bool]]] = {}
+        for question, value in items.items():
+            right = set(value) if isinstance(value, list) else {value}
+
+            explicit = group_wrong.get(question)
+            if explicit is not None:
+                wrong = list(dict.fromkeys(
+                    explicit if isinstance(explicit, list) else [explicit]))
+                wrong = [a for a in wrong if a not in right]
+            else:
+                wrong = []
+
+            if len(wrong) < fill_missing:
+                exclude = right | set(wrong)
+                wrong += self._generate_wrong_answers(
+                    pool, pool_set, exclude, fill_missing - len(wrong))
+
+            entries: list[tuple[str, bool]] = [(a, True) for a in right]
+            entries += [(a, False) for a in wrong]
+            group_stored[question] = entries
+        return group_stored
+
+
+    def _build_reverse_group(self, items: dict,
+                             fill_missing: int) -> dict[str, list[tuple[str, bool]]]:
+        """Строит обратные вопросы (ответ -> вопросы) для StoredMode.ANSWER."""
+        title_pool = list(items.keys())
+        title_pool_set = set(title_pool)
+
+        answer_to_titles: dict[str, set[str]] = {}
+        for question, value in items.items():
+            answers = value if isinstance(value, list) else [value]
+            for answer in answers:
+                answer_to_titles.setdefault(answer, set()).add(question)
+
+        group_stored_reverse: dict[str, list[tuple[str, bool]]] = {}
+        for answer_text, right_titles in answer_to_titles.items():
+            wrong_titles = self._generate_wrong_answers(
+                title_pool, title_pool_set, right_titles, fill_missing)
+
+            entries: list[tuple[str, bool]] = [(t, True) for t in right_titles]
+            entries += [(t, False) for t in wrong_titles]
+            group_stored_reverse[answer_text] = entries
+
+        return group_stored_reverse
+
     def to_stored(self, wrong_answers: SimpleWrongAnswers | None = None,
                   fill_missing: int = 3) -> StoredQGroupsModel:
         if not isinstance(fill_missing, int) or fill_missing < 0:
@@ -93,34 +145,12 @@ class SimpleQGroups(BaseQGroups[SimpleQGroupsModel]):
         stored: dict = {}
 
         for group, items in self.data.items():
-            values = list(items.values())
-            pool = self._flatten_answers(values)
-            pool_set = set(pool)
-
             group_wrong = wrong_answers.get(group, {}) if wrong_answers else {}
-            group_stored: dict[str, list[tuple[str, bool]]] = {}
 
-            for question, value in items.items():
-                right = set(value) if isinstance(value, list) else {value}
-
-                explicit = group_wrong.get(question)
-                if explicit is not None:
-                    wrong = list(dict.fromkeys(
-                        explicit if isinstance(explicit, list) else [explicit]))
-                    wrong = [a for a in wrong if a not in right]
-                else:
-                    wrong = []
-
-                if len(wrong) < fill_missing:
-                    exclude = right | set(wrong)
-                    wrong += self._generate_wrong_answers(
-                        pool, pool_set, exclude, fill_missing - len(wrong))
-
-                entries: list[tuple[str, bool]] = [(a, True) for a in right]
-                entries += [(a, False) for a in wrong]
-                group_stored[question] = entries
+            group_stored = self._build_group(items, group_wrong, fill_missing)
+            group_stored_reverse = self._build_reverse_group(items, fill_missing)
 
             stored[group] = {StoredMode.QUESTION: group_stored,
-                             StoredMode.ANSWER: {}}
+                             StoredMode.ANSWER: group_stored_reverse}
 
         return StoredQGroupsModel(data=stored)
