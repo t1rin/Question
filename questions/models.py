@@ -1,13 +1,18 @@
-from pydantic import BaseModel, ValidationError
+from pydantic import (BaseModel, ConfigDict,
+                      ValidationError)
 
 from .types import *
 
 
 class SimpleQGroupsModel(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
     data: dict[str, SimpleQuestionGroup]
 
 
 class StoredQGroupsModel(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
     data: StoredGroups
 
 
