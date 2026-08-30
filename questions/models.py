@@ -17,5 +17,10 @@ class QItem(BaseModel):
     right_answers: list[str] = []
     wrong_answers: list[str] = []
 
+    @property
+    def all_answers(self) -> list[str]:
+        """Все ответы (правильные + неправильные)"""
+        return self.right_answers + self.wrong_answers
+
     def is_right(self, answer: str) -> bool:
         return answer in self.right_answers

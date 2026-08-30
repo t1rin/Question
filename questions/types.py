@@ -1,10 +1,10 @@
 from typing import TypeAlias
-from enum import IntEnum
+from enum import StrEnum
 
     
-class StoredMode(IntEnum):
-    QUESTION = 0
-    ANSWER = 1
+class StoredMode(StrEnum):
+    QUESTION = "question"
+    ANSWER = "answer"
 
 
 SimpleAnswer: TypeAlias = str | list[str]
