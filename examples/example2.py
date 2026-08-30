@@ -19,9 +19,10 @@ class App:
         self.width = None   # значение ширины терминала
 
         self.active_loop = True     # вспомогательная переменная
-        self.rand_key_value = True  # рандомный значение self.key_is_main
-        self.key_is_main = True     # при значении False вопросы поменяются с ответами
-        self.quentity_items = 5     # вспомогательная переменная
+        self.rand_key_value = False # рандомный значение self.reverse
+        self.quantity_ans = 5       # вспомогательная переменная
+        self.reverse = False        # при значении True вопросы 
+                                    # поменяются с ответами
 
         self._active_warning = False  # вспомогательная переменная
         self._index_warning = None    # вспомогательная переменная
@@ -38,10 +39,10 @@ class App:
     def run(self):
         while self.active_loop:
             if self.rand_key_value:
-                self.key_is_main = bool(random.randint(0,1))
+                self.reverse = bool(random.randint(0,1))
 
             question = self._data.get_rand_question(
-                key_is_main=self.key_is_main, quentity_items=self.quentity_items)
+                reverse=self.reverse, quantity_ans=self.quantity_ans)
 
             if question is None:
                 self.show_message("Добавьте вопросов!")

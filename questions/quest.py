@@ -1,8 +1,6 @@
 import logging
-from typing import Callable
 
 from .question_groups import *
-from .models import QItem, StoredQGroupsModel
 
 
 logger = logging.getLogger(__name__)
@@ -48,4 +46,7 @@ class QuestionBank:
     def load_simple_data(self, data: dict) -> None:
         self._simple_groups.load_data(data)
         self._need_synchronization = True
+
+    def get_simple_data(self) -> dict:
+        return self._simple_groups.data
 

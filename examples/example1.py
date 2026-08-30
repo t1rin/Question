@@ -1,31 +1,32 @@
-import os, sys
+import os
+import sys
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 
-from questions import *
+from questions import QuestionBank
 
-KEY_IS_MAIN = True
+REVERSE = False
 
 
 def show_question(title, answers):
     print(title)
     for i, answer in enumerate(answers):
-        print(f"{i}. {answer}")
+        print(f"{i+1}. {answer}")  # Исправлено: нумерация с 1
 
 
 def get_answer_index(max_index):
     while True:
         raw = input(">> ")
-        if not raw.isdigit() and not (raw.startswith('-') and raw[1:].isdigit()):
+        if not raw.isdigit():
             print("Пожалуйста, введите число!")
             continue
-        index = int(raw)
+        index = int(raw) - 1  # Исправлено: перевод в 0-based индекс
         if 0 <= index < max_index:
             return index
         print("Некорректный номер ответа!")
 
 
 def ask_question(data):
-    question = data.get_rand_question(key_is_main=KEY_IS_MAIN)
+    question = data.get_rand_question(reverse=REVERSE, quantity_ans=3)
     if question is None:
         print("Добавьте вопросов!")
         return False
@@ -33,7 +34,7 @@ def ask_question(data):
     answers = question.all_answers
 
     show_question(question.title, answers)
-    print("Каков ответ?" if KEY_IS_MAIN else "Каков вопрос?")
+    print("Каков вопрос?" if REVERSE else "Каков ответ?")
 
     while True:
         index = get_answer_index(len(answers))
@@ -51,4 +52,4 @@ def main_loop(data):
 
 
 if __name__ == "__main__":
-    main_loop(QuestionBank("data.example.json"))
+    main_loop(QuestionBank(path_to_simple="data.example.json"))
