@@ -1,5 +1,6 @@
 import os
 import logging
+from pathlib import Path
 from abc import ABC, abstractmethod
 from typing import (Generic, TypeVar,
                     Protocol, runtime_checkable)
@@ -29,40 +30,45 @@ class BaseQGroups(ABC, Generic[ModelT]):
         self._json_cache: bytes | None = None
 
         self._init_groups()
-        if path_to_json:
-            self.load_json(path_to_json)
+        self.load_json(path_to_json)
 
     def _is_normal_data(self, data: dict) -> bool:
         try: self.ModelClass(data=data)
-        except ValidationError:
+        except ValidationError as e:
+            logger.error("Ошибка валидации класса %s : %s",
+                         type(self.ModelClass), e)
             return False
         return True
 
     def _is_normal_json(self) -> bool:
         assert self._path is not None
         if not os.path.exists(self._path):
+            logger.error(
+                "Переданного (%s) пути не существует", self._path)
             return False
         try:
             with open(self._path, "rb") as json_file:
                 data = orjson.loads(json_file.read())
-        except Exception as e:
-            logger.error(f"Некорректная структура json файла: {e}")
+        except Exception as err:
+            logger.error(f"Некорректная структура json файла: %s", err)
             return False
         return self._is_normal_data(data)
 
     def _create_json(self) -> None:
-        index = 0
         assert self._path is not None
-        name = self._path.split(".")
-        while os.path.exists(self._path):
-            if os.path.exists((str(index)+".").join(name)):
+        file_path = Path(self._path)
+    
+        if file_path.exists():
+            index = 1
+            while True:
+                backup_path = file_path.parent / f"{file_path.stem}_{index}{file_path.suffix}"
+                if not backup_path.exists():
+                    file_path.rename(backup_path)
+                    logger.info("Создан новый " + self._path)
+                    break
                 index += 1
-                continue
-            os.rename(self._path, (str(index)+".").join(name))
-
-        with open(self._path, "wb") as json_file:
-            json_file.write(orjson.dumps({}))
-
+    
+        file_path.write_bytes(orjson.dumps({}, option=orjson.OPT_INDENT_2))
         logger.info("Создан новый " + self._path)
 
     def _read_json(self) -> None:

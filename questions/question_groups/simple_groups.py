@@ -2,6 +2,7 @@ import logging
 from random import sample
 
 from .base_groups import BaseQGroups
+from ..types import StoredMode
 from ..models import *
 
 
@@ -89,9 +90,9 @@ class SimpleQGroups(BaseQGroups[SimpleQGroupsModel]):
             logger.error("wrong_answers имеет некорректную структуру, игнорируется")
             wrong_answers = None
 
-        stored: dict[str, dict[str, list[tuple[str, bool]]]] = {}
+        stored: dict = {}
 
-        for group, items in self._data.items():
+        for group, items in self.data.items():
             values = list(items.values())
             pool = self._flatten_answers(values)
             pool_set = set(pool)
@@ -119,6 +120,7 @@ class SimpleQGroups(BaseQGroups[SimpleQGroupsModel]):
                 entries += [(a, False) for a in wrong]
                 group_stored[question] = entries
 
-            stored[group] = group_stored
+            stored[group] = {StoredMode.QUESTION: group_stored,
+                             StoredMode.ANSWER: {}}
 
         return StoredQGroupsModel(data=stored)

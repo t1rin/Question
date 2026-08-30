@@ -15,7 +15,7 @@ class StoredQGroups(BaseQGroups[StoredQGroupsModel]):
 
     ModelClass = StoredQGroupsModel
 
-    def _merge(self, *datas: dict) -> dict:
+    def _merge(self, *datas: dict) -> dict: # TODO: resolve conflicts
         """Функция объединения данных."""
         result: StoredGroups = {}
 
@@ -82,7 +82,10 @@ class StoredQGroups(BaseQGroups[StoredQGroupsModel]):
                    ) -> list[QItem] | None:
         if group not in self.data.keys():
             return None
-        qitems_source = self.data[group][int(reverse)]
+
+        qmode = (StoredMode.ANSWER if reverse
+                 else StoredMode.QUESTION)
+        qitems_source = self.data[group][qmode]
 
         qitems = []
         for title, answers in qitems_source.items():
@@ -144,7 +147,7 @@ class StoredQGroups(BaseQGroups[StoredQGroupsModel]):
             logger.error("title \"" + title + "\" не найден")
             return None
 
-        answers = self.data[group][qmode][title]
+        answers = self._data[group][qmode][title]
         shuffle(answers)
 
         return self._building_question(group, title, answers, quantity_ans)
@@ -168,7 +171,7 @@ class StoredQGroups(BaseQGroups[StoredQGroupsModel]):
 
         qmode = (StoredMode.ANSWER if reverse
                  else StoredMode.QUESTION)
-        qitems_source = self.data[group][qmode]
+        qitems_source = self._data[group][qmode]
     
         if not qitems_source:
             logger.warning("В группе '%s' нет вопросов", group)
