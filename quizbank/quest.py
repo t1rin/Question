@@ -27,18 +27,12 @@ class QuestionBank:
             fill_missing=self.default_fill_missing)
         self._stored_groups.load_data(_stored.data)
 
-    def __getattr__(self, name: str):
+    def __getattr__(self, name):
+        if self._need_synchronization:
+            self._synchronize()
+            self._need_synchronization = False
         stored_attr = getattr(self._stored_groups, name)
- 
-        if callable(stored_attr):
-            def wrapper(*args, **kwargs):
-                if self._need_synchronization:
-                    self._synchronize()
-                    self._need_synchronization = False
-                return stored_attr(*args, **kwargs)
-            return wrapper
- 
-        return stored_attr
+        return stored_attr if not callable(stored_attr) else stored_attr
 
     def load_simple_json(self, path_to_json: str) -> None:
         self._simple_groups.load_json(path_to_json)
