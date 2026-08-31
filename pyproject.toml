@@ -1,28 +1,37 @@
 [project]
 name = "quizbank"
 version = "0.4.0"
-description = ""
+description = "Create tests with questions and answers"
 authors = [
-    {name = "T1rin",email = "t1rin@mail.ru"}
+    {name = "T1rin", email = "t1rin@mail.ru"}
 ]
 license = "MIT"
+license-files = ["LICENSE"]
 readme = "README.md"
 requires-python = ">=3.12"
+keywords = ["quiz", "questions", "answers", "testing", "education"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Education",
+]
 dependencies = [
-    "pydantic (>=2.13.4,<3.0.0)",
-    "orjson (>=3.12.0,<4.0.0)"
+    "pydantic>=2.13.4,<3.0.0",
+    "orjson>=3.12.0,<4.0.0",
 ]
 
 [project.urls]
 Repository = "https://github.com/t1rin/quizbank"
 
-[tool.poetry]
-packages = [{ include = "quizbank" }]
-
 [dependency-groups]
 dev = [
-    "mypy (>=2.3.1,<3.0.0)"
+    "mypy>=2.3.1,<3.0.0"
 ]
+
+[tool.poetry]
+packages = [{ include = "quizbank" }]
 
 [tool.mypy]
 plugins = ["pydantic.mypy"]
@@ -30,7 +39,6 @@ plugins = ["pydantic.mypy"]
 [[tool.mypy.overrides]]
 module = "pydantic.*"
 ignore_missing_imports = true
-
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
