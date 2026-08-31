@@ -20,7 +20,7 @@ class App:
 
         self.active_loop = True     # вспомогательная переменная
         self.rand_key_value = False # рандомный значение self.reverse
-        self.quantity_ans = 5       # вспомогательная переменная
+        self.quantity_ans = 3       # количество вариантов ответа всего
         self.reverse = False        # при значении True вопросы 
                                     # поменяются с ответами
 
