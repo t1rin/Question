@@ -1,4 +1,5 @@
 import logging
+from copy import deepcopy
 from random import shuffle, choice, sample
 
 from .base_groups import BaseQGroups
@@ -123,7 +124,7 @@ class StoredQGroups(BaseQGroups[StoredQGroupsModel]):
         с количеством правильных ответов quantity_right,
         если они имеются"""
 
-        if quantity < 2 or quantity_right < 1:
+        if (quantity < 2) or (quantity_right < 1) or (quantity_right > quantity):
             logger.error("Некорректное количество вариантов ответа")
             return None
         
@@ -172,7 +173,7 @@ class StoredQGroups(BaseQGroups[StoredQGroupsModel]):
             logger.error("title \"" + title + "\" не найден")
             return None
 
-        answers = self._data[group][qmode][title]
+        answers = deepcopy(self._data[group][qmode][title])
         shuffle(answers)
 
         return self._building_question(group, title, answers,
@@ -205,7 +206,7 @@ class StoredQGroups(BaseQGroups[StoredQGroupsModel]):
             return None
     
         title = choice(list(qitems_source.keys()))
-        answers = qitems_source[title]
+        answers = deepcopy(qitems_source[title])
     
         shuffle(answers)
     

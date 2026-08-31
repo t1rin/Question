@@ -1,5 +1,6 @@
 import logging
 from pathlib import Path
+from copy import deepcopy
 from abc import ABC, abstractmethod
 from typing import (Generic, TypeVar,
                     Protocol, runtime_checkable)
@@ -135,9 +136,10 @@ class BaseQGroups(ABC, Generic[ModelT]):
 
     @property
     def data(self) -> dict:
-        return self._data
+        """Получение данных в виде словаря"""
+        return deepcopy(self._data)
     
     @property
     def path(self) -> Path | None:
-        """Доступ к пути файла"""
-        return self._path
+        """Получение пути к файлу"""
+        return deepcopy(self._path)

@@ -1,3 +1,4 @@
+from random import shuffle
 from pydantic import (BaseModel, ConfigDict,
                       ValidationError)
 
@@ -25,7 +26,6 @@ class QItem(BaseModel):
     @property
     def all_answers(self) -> list[str]:
         """Все ответы в перемешку"""
-        from random import shuffle
         _result = self.right_answers + self.wrong_answers
         shuffle(_result)
         return _result
