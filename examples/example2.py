@@ -43,6 +43,7 @@ class App:
 
             question = self._data.get_rand_question(
                 reverse=self.reverse, quantity_ans=self.quantity_ans)
+            all_answers = question.all_answers
 
             if question is None:
                 self.show_message("Добавьте вопросов!")
@@ -54,7 +55,7 @@ class App:
 
                 self.show_question(question.title,
                                    question.group,
-                                   *question.all_answers)
+                                   *all_answers)
 
                 if self._active_warning:
                     if self._index_warning is None:
@@ -70,14 +71,13 @@ class App:
 
                 try:
                     index = int(self.get_answer(msg="Ответ > ")) - 1
-                    if not (0 <= index < len(question.all_answers)):
+                    if not (0 <= index < len(all_answers)):
                         raise ValueError
                 except ValueError:
                     self._active_warning = True
                     continue
 
-                right = question.is_right(
-                    question.all_answers[index])
+                right = question.is_right(all_answers[index])
                 if right:
                     self.show_flash(color="green")
                     self.show_message("✅ Молодец! Ответ верный!")
