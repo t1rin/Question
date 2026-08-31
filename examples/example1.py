@@ -2,7 +2,7 @@ import os
 import sys
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 
-from questions import QuestionBank
+from quizbank import QuestionBank
 
 REVERSE = False
 
@@ -10,7 +10,7 @@ REVERSE = False
 def show_question(title, answers):
     print(title)
     for i, answer in enumerate(answers):
-        print(f"{i+1}. {answer}")  # Исправлено: нумерация с 1
+        print(f"{i+1}. {answer}")
 
 
 def get_answer_index(max_index):
@@ -19,7 +19,7 @@ def get_answer_index(max_index):
         if not raw.isdigit():
             print("Пожалуйста, введите число!")
             continue
-        index = int(raw) - 1  # Исправлено: перевод в 0-based индекс
+        index = int(raw) - 1
         if 0 <= index < max_index:
             return index
         print("Некорректный номер ответа!")

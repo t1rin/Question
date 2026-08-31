@@ -4,7 +4,7 @@ sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 import time
 import random
 
-from questions import *
+from quizbank import *
 
 
 color_codes = {

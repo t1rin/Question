@@ -1,6 +1,6 @@
 [project]
-name = "questions"
-version = "0.1.0"
+name = "quizbank"
+version = "0.4.0"
 description = ""
 authors = [
     {name = "T1rin",email = "t1rin@mail.ru"}
@@ -12,6 +12,12 @@ dependencies = [
     "pydantic (>=2.13.4,<3.0.0)",
     "orjson (>=3.12.0,<4.0.0)"
 ]
+
+[project.urls]
+Repository = "https://github.com/t1rin/quizbank"
+
+[tool.poetry]
+packages = [{ include = "quizbank" }]
 
 [dependency-groups]
 dev = [

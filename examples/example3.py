@@ -1,5 +1,5 @@
-from questions import QuestionBank
-from questions.types import SimpleWrongAnswers
+from quizbank import QuestionBank
+from quizbank.types import SimpleWrongAnswers
 
 
 def show(title: str, stored) -> None:
