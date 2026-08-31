@@ -1,5 +1,5 @@
 import logging
-from random import shuffle, choice
+from random import shuffle, choice, sample
 
 from .base_groups import BaseQGroups
 from ..types import StoredMode, StoredAnswer, StoredGroups
@@ -117,8 +117,13 @@ class StoredQGroups(BaseQGroups[StoredQGroupsModel]):
 
     def _building_question(self, group: str, title: str,
                            answers: list[StoredAnswer],
-                           quantity: int) -> QItem | None:
-        if quantity < 2:
+                           quantity: int, quantity_right: int = 1,
+                           ) -> QItem | None:
+        """Состовляет экземпляр класса QItem
+        с количеством правильных ответов quantity_right,
+        если они имеются"""
+
+        if quantity < 2 or quantity_right < 1:
             logger.error("Некорректное количество вариантов ответа")
             return None
         
@@ -130,17 +135,20 @@ class StoredQGroups(BaseQGroups[StoredQGroupsModel]):
         right_answers: list[str] = []
         wrong_answers: list[str] = []
         for answer_text, is_right in answers:
-            if is_right and not right_answers:
+            if is_right:
                 right_answers.append(answer_text)
-            elif not is_right and len(wrong_answers) < quantity - 1:
+            else:
                 wrong_answers.append(answer_text)
-        
-            if len(right_answers) + len(wrong_answers) == quantity:
-                break
     
         if not right_answers:
             logger.error("Не найден правильный ответ для вопроса '%s'", title)
             return None
+        
+        q_right = min(len(right_answers), quantity_right)
+        right_answers = sample(right_answers, q_right)
+
+        q_wrong = min(len(wrong_answers), quantity - quantity_right)
+        wrong_answers = sample(wrong_answers, q_wrong)
     
         return QItem(group=group, title=title,
                      right_answers=right_answers,
@@ -149,6 +157,7 @@ class StoredQGroups(BaseQGroups[StoredQGroupsModel]):
     def get_question(self, group: str, title: str,
                      reverse: bool = False,
                      quantity_ans: int = 3,
+                     quantity_right: int = 1,
                      ) -> QItem | None:
         if any(not isinstance(name, str) for name in [title, group]):
             logger.error("Ожидается group -> [str], title -> [str]")
@@ -166,13 +175,15 @@ class StoredQGroups(BaseQGroups[StoredQGroupsModel]):
         answers = self._data[group][qmode][title]
         shuffle(answers)
 
-        return self._building_question(group, title, answers, quantity_ans)
+        return self._building_question(group, title, answers,
+                                       quantity_ans, quantity_right)
 
 
     def get_rand_question(self,
                           group: str | None = None,
                           reverse: bool = False,
                           quantity_ans: int = 3,
+                          quantity_right: int = 1,
                           ) -> QItem | None:
         if not self.data:
             logger.warning("Вопросов нет")
@@ -198,4 +209,5 @@ class StoredQGroups(BaseQGroups[StoredQGroupsModel]):
     
         shuffle(answers)
     
-        return self._building_question(group, title, answers, quantity_ans)
+        return self._building_question(group, title, answers,
+                                       quantity_ans, quantity_right)
