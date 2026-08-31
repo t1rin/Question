@@ -24,8 +24,12 @@ class QItem(BaseModel):
 
     @property
     def all_answers(self) -> list[str]:
-        """Все ответы (правильные + неправильные)"""
-        return self.right_answers + self.wrong_answers
+        """Все ответы в перемешку"""
+        from random import shuffle
+        _result = self.right_answers + self.wrong_answers
+        shuffle(_result)
+        return _result
 
     def is_right(self, answer: str) -> bool:
+        """Проверка на правильность ответа"""
         return answer in self.right_answers
