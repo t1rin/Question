@@ -2,6 +2,7 @@
 **/__pycache__
 /archive
 /.vs
+/dist
 
 test*.py
 data_.json
