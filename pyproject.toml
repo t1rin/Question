@@ -1,6 +1,6 @@
 [project]
 name = "quizbank"
-version = "0.4.0"
+version = "0.4.1"
 description = "Create tests with questions and answers"
 authors = [
     {name = "T1rin", email = "t1rin@mail.ru"}
