@@ -1,7 +1,9 @@
+🌐 **RUSSIAN** | [ENGLISH](README_EN.md)
+
 # Описание
 
 <div align="center">
-  <img src="src/2.png">
+  <img src="src/1.png">
 </div>
 
 Модуль `quizbank` для создания и хранения наборов вопросов с ответами, объединённых в группы. Поддерживает два формата данных:
@@ -22,8 +24,8 @@ bank = QuestionBank(
 )
 ```
 
-- `path_to_simple` — путь к json файлу в simple-формате;
-- `path_to_stored` — путь к json файлу в stored-формате.
+- `path_to_simple` — путь к JSON файлу в simple-формате;
+- `path_to_stored` — путь к JSON файлу в stored-формате.
 
 Оба параметра необязательны. Если указан `path_to_simple`, данные при инициализации автоматически конвертируются и сохраняются в stored-хранилище.
 
@@ -33,7 +35,7 @@ bank = QuestionBank(
 
 #### — метод `load_simple_json`
 
-загружает json файл simple-формата
+Загружает json файл simple-формата
 
 ```python
 bank.load_simple_json("simple.json")
@@ -41,7 +43,7 @@ bank.load_simple_json("simple.json")
 
 #### — метод `load_simple_data`
 
-загружает новые данные из словаря simple-формата (объединяются с уже имеющимися)
+Загружает новые данные из словаря simple-формата (объединяются с уже имеющимися)
 
 ```python
 bank.load_simple_data({
@@ -51,7 +53,7 @@ bank.load_simple_data({
 
 #### — метод `add_question`
 
-добавляет один вопрос напрямую в stored-хранилище с явным указанием правильных и неправильных ответов
+Добавляет один вопрос напрямую в stored-хранилище с явным указанием правильных и неправильных ответов
 
 ```python
 bank.add_question(
@@ -64,7 +66,7 @@ bank.add_question(
 
 #### — метод `get_groups`
 
-возвращает список всех групп
+Возвращает список всех групп
 
 ```python
 groups = bank.get_groups()
@@ -72,7 +74,7 @@ groups = bank.get_groups()
 
 #### — метод `get_question`
 
-возвращает конкретный вопрос группы
+Возвращает конкретный вопрос группы
 
 ```python
 question = bank.get_question(
@@ -82,11 +84,11 @@ question = bank.get_question(
 )
 ```
 
-вернёт `QItem` для вопроса `"Вопрос1"` из группы `"Набор1"` с пятью вариантами ответа
+Вернёт `QItem` для вопроса `"Вопрос1"` из группы `"Набор1"` с пятью вариантами ответа
 
 #### — метод `get_rand_question`
 
-возвращает случайный вопрос
+Возвращает случайный вопрос
 
 ```python
 question = bank.get_rand_question(
@@ -95,11 +97,11 @@ question = bank.get_rand_question(
 )
 ```
 
-если `group` не задан — вопрос выбирается из случайной группы
+Если `group` не задан — вопрос выбирается из случайной группы
 
 #### — метод `get_qitems`
 
-возвращает все вопросы группы
+Возвращает все вопросы группы
 
 ```python
 items = bank.get_qitems(group="Набор1")
@@ -107,7 +109,7 @@ items = bank.get_qitems(group="Набор1")
 
 #### — метод `get_all_data_str` / `get_all_data_bytes`
 
-возвращает все данные stored-хранилища сериализованными в JSON (строкой или байтами)
+Возвращает все данные stored-хранилища сериализованными в JSON (строкой или байтами)
 
 ```python
 raw = bank.get_all_data_str()
@@ -118,7 +120,7 @@ raw = bank.get_all_data_str()
 
 ## `QItem`
 
-отдельно взятый вопрос с вариантами ответов; создаётся не напрямую, а через `get_question` / `get_rand_question` / `get_qitems`
+Отдельно взятый вопрос с вариантами ответов; создаётся не напрямую, а через `get_question` / `get_rand_question` / `get_qitems`
 
 ```python
 question = bank.get_rand_question(group="Набор1")
@@ -130,7 +132,7 @@ question = bank.get_rand_question(group="Набор1")
 
 #### — свойство `title`
 
-заголовок вопроса
+Заголовок вопроса
 
 ```python
 question.title
@@ -138,7 +140,7 @@ question.title
 
 #### — свойство `group`
 
-наименование группы вопроса
+Наименование группы вопроса
 
 ```python
 question.group
@@ -146,7 +148,7 @@ question.group
 
 #### — свойство `right_answers`
 
-список правильных ответов к вопросу
+Список правильных ответов к вопросу
 
 ```python
 question.right_answers
@@ -154,7 +156,7 @@ question.right_answers
 
 #### — свойство `wrong_answers`
 
-список неправильных ответов к вопросу
+Список неправильных ответов к вопросу
 
 ```python
 question.wrong_answers
@@ -162,7 +164,7 @@ question.wrong_answers
 
 #### — свойство `all_answers`
 
-все ответы к вопросу (правильные + неправильные)
+Все ответы к вопросу (правильные + неправильные)
 
 ```python
 question.all_answers
@@ -170,7 +172,7 @@ question.all_answers
 
 #### — метод `is_right`
 
-проверяет правильность выбранного ответа
+Проверяет правильность выбранного ответа
 
 ```python
 question.is_right(answer)
@@ -181,4 +183,4 @@ question.is_right(answer)
 
 # Примеры
 
-примеры в `/examples`
+Примеры в `/examples`
